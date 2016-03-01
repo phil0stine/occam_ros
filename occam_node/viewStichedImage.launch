@@ -1,0 +1,14 @@
+<launch>
+
+  <!-- Run Occam  -->
+  <node name="occam_node" pkg="occam_node" type="ros_indigosdk_node">
+     <!-- <remap from="/occam_node/stitched_image0" to="/occam_stereo/left"/> -->
+  </node>
+
+  <!-- View Images  -->
+    <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
+    <remap from="image" to="/occam_node/stitched_image0"/>
+    <param name="autosize" value="true" />
+  </node>
+
+</launch>
