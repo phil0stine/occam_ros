@@ -1,8 +1,7 @@
 <launch>
 
   <!-- Run Occam  -->
-  <node name="occam_node" pkg="occam_node" type="ros_indigosdk_node">
-     <!-- <remap from="/occam_node/stitched_image0" to="/occam_stereo/left"/> -->
+  <node name="occam_node" pkg="occam_node" type="ros_indigosdk_node" output="screen">
   </node>
 
   <!-- View Images  -->
