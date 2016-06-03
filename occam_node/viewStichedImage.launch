@@ -10,4 +10,8 @@
     <param name="autosize" value="true" />
   </node>
 
+ <!-- Dynamic Reconfigure -->
+ <node name="config" pkg="rqt_gui" type="rqt_gui" >
+ </node>
+
 </launch>

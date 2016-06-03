@@ -41,12 +41,14 @@ int main(int argc, char **argv) { // pass 2 arguments to set parameter: package_
             int crop = fParams["Camera.crop"];
             float radius = fParams["Camera.radius"];
             int radiusInt = radius*1000000;
+            int exposure = fParams["Camera.exposure"];
 
             // set parameters
             a.setDeviceValue(OCCAM_TARGET_FPS, fps);
             a.setDeviceValue(OCCAM_STITCHING_RADIUS, radiusInt);
             a.setDeviceValue(OCCAM_STITCHING_ROTATION, theta);
             a.setDeviceValue(OCCAM_STITCHING_CROP, crop);
+            a.setDeviceValue(OCCAM_EXPOSURE, exposure);
 
             // display parameters
             cout << "--- OCCAM PARAMETERS ---" << endl;
