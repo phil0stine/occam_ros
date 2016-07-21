@@ -72,6 +72,14 @@ target_link_libraries(publishOccamData
     ${catkin_LIBRARIES}
 )
 
+add_executable(publishOccamDisparityData
+    nodes/publishOccamDisparity.cpp
+)
+target_link_libraries(publishOccamDisparityData
+    ${INDIGO_LIB}
+    ${catkin_LIBRARIES}
+)
+    
 # ___________ INSTALL ______________
 
 install(TARGETS ros_indigosdk_node
