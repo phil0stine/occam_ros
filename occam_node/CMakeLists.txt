@@ -47,7 +47,7 @@ find_library(INDIGO_LIB NAMES indigo HINTS "${INDIGOSDK_PATH}/release/bin")
 
 include_directories(
         include
-	${catkin_INCLUDE_DIRS}
+	    ${catkin_INCLUDE_DIRS}
         ${INDIGOSDK_INCLUDE_DIR}
         ${PC_LIBUSB_INCLUDE_DIRS}
 )
@@ -75,6 +75,14 @@ add_executable(publishOccamData
     nodes/publishOccamData.cpp
 )
 target_link_libraries(publishOccamData
+    ${INDIGO_LIB}
+    ${catkin_LIBRARIES}
+)
+
+add_executable(publishSpecificDisparityData
+    nodes/publishSpecificDisparity.cpp
+)
+target_link_libraries(publishSpecificDisparityData
     ${INDIGO_LIB}
     ${catkin_LIBRARIES}
 )
