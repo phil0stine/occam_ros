@@ -1,0 +1,13 @@
+<launch>
+
+  <!-- Run Occam  -->
+  <node name="occam_node" pkg="occam_node" type="publishOccamDisparityData">
+<remap from="/occam_node/stitched_image0" to="/camera/image_raw"/>
+  </node>
+
+   <node pkg="image_view" type="image_view" name="image_view" respawn="false" output="log">
+    <remap from="/image" to="/camera/image_raw" />
+    <param name="autosize" value="true"/>
+    </node>
+
+</launch>
