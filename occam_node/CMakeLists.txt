@@ -18,6 +18,7 @@ find_package(catkin
 		roscpp 
 		std_msgs 
 		sensor_msgs 
+                cv_bridge
         camera_info_manager
 )
 
@@ -86,7 +87,7 @@ target_link_libraries(publishSpecificDisparityData
     ${INDIGO_LIB}
     ${catkin_LIBRARIES}
 )
-
+    
 # ___________ INSTALL ______________
 
 install(TARGETS ros_indigosdk_node

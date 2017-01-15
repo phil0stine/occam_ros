@@ -1,7 +1,8 @@
 <launch>
 
   <!-- Run Occam  -->
-  <node name="occam_node" pkg="occam_node" type="ros_indigosdk_node" output="screen">
+  <node name="occam_node" pkg="occam_node" type="publishOccamData" output="screen"
+    args="occam_node config/parameters.yaml">
   </node>
 
   <!-- View Images  -->
@@ -9,9 +10,5 @@
     <remap from="image" to="/occam_node/stitched_image0"/>
     <param name="autosize" value="true" />
   </node>
-
- <!-- Dynamic Reconfigure -->
- <node name="config" pkg="rqt_gui" type="rqt_gui" >
- </node>
 
 </launch>

@@ -1,0 +1,10 @@
+%YAML:1.0
+
+# PARAMETERS OCCAM
+
+Camera.fps: 30
+
+# Cylindrical Blender Control
+Camera.radius: 2.626563 # [m]
+Camera.theta: 0 # [0-360 deg]
+Camera.crop: 1 # [0, 1]
