@@ -4,7 +4,11 @@
 
 ### 1. Clone this repository
 
+```sh
+git clone https://github.com/CityU-MBE/occam_ros.git
 ```
+or
+```sh
 git clone git@github.com:CityU-MBE/occam.git
 ```
 

@@ -187,10 +187,10 @@ target_link_libraries(read_calib indigo)
 
 if(USE_OPENCV)
   add_executable(read_images_opencv examples/read_images_opencv.cc)
-  target_link_libraries(read_images_opencv indigo ${OpenCV_LIBS_OPT})
+  target_link_libraries(read_images_opencv indigo ${OpenCV_LIBS})
 
   add_executable(read_images_periodic examples/read_images_periodic.cc)
-  target_link_libraries(read_images_periodic indigo ${OpenCV_LIBS_OPT})
+  target_link_libraries(read_images_periodic indigo ${OpenCV_LIBS} pthread)
 
   # needs OpenCV 3.0
   #add_executable(offline_stitch examples/offline_stitch.cc)
