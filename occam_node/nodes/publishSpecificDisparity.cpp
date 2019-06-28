@@ -14,7 +14,17 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "occam");
 
     // define data to advertise
-    vector<_OccamDataName> vTopics = {OCCAM_DISPARITY_IMAGE0};
+    vector<_OccamDataName> vTopics = {OCCAM_RECTIFIED_IMAGE0,
+                                      OCCAM_RECTIFIED_IMAGE1,
+                                      OCCAM_RECTIFIED_IMAGE2,
+                                      OCCAM_RECTIFIED_IMAGE3,
+                                      OCCAM_RECTIFIED_IMAGE4,
+                                      OCCAM_RECTIFIED_IMAGE5,
+                                      OCCAM_RECTIFIED_IMAGE6,
+                                      OCCAM_RECTIFIED_IMAGE7,
+                                      OCCAM_RECTIFIED_IMAGE8,
+                                      OCCAM_RECTIFIED_IMAGE9};
+    //vector<_OccamDataName> vTopics = {OCCAM_STITCHED_POINT_CLOUD};
 
     // setup device and publishers
     OccamNode a(vTopics);

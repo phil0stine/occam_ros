@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
-project(indigosdk)
+project(occam_sdk)
+
+find_package(catkin)
+
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES indigo
+  )
 
 set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")

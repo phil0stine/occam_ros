@@ -19,7 +19,8 @@ find_package(catkin
 		std_msgs 
 		sensor_msgs 
                 cv_bridge
-        camera_info_manager
+                camera_info_manager
+                occam_sdk
 )
 
 find_package(PkgConfig REQUIRED)
@@ -39,17 +40,16 @@ catkin_package(
 # _______________INDIGO SDK____________________
 
 
-set(INDIGOSDK_PATH "/home/tyler/Software/occam/occam_sdk")   # <----- ADAPT ----------------------------------
+# set(INDIGOSDK_PATH "/home/tyler/Software/occam/occam_sdk")   # <----- ADAPT ----------------------------------
 
-set(INDIGOSDK_INCLUDE_DIR "${INDIGOSDK_PATH}/include")
-find_library(INDIGO_LIB NAMES indigo HINTS "${INDIGOSDK_PATH}/release/bin")
+# set(INDIGOSDK_INCLUDE_DIR "${INDIGOSDK_PATH}/include")
+# find_library(INDIGO_LIB NAMES indigo HINTS "${INDIGOSDK_PATH}/release/bin")
 
 # ___________ INCLUDES ______________
 
 include_directories(
         include
-	    ${catkin_INCLUDE_DIRS}
-        ${INDIGOSDK_INCLUDE_DIR}
+        ${catkin_INCLUDE_DIRS}
         ${PC_LIBUSB_INCLUDE_DIRS}
 )
 
@@ -59,7 +59,6 @@ add_executable(ros_indigosdk_node
     nodes/ros_indigosdk_node.cpp
 )
 target_link_libraries(ros_indigosdk_node
-    ${INDIGO_LIB}
     ${catkin_LIBRARIES}
 )
 
@@ -68,7 +67,6 @@ add_executable(publishOccamDisparityData
     nodes/publishStitchandDisparity.cpp
 )
 target_link_libraries(publishOccamDisparityData
-    ${INDIGO_LIB}
     ${catkin_LIBRARIES}
 )
 
@@ -84,10 +82,9 @@ add_executable(publishSpecificDisparityData
     nodes/publishSpecificDisparity.cpp
 )
 target_link_libraries(publishSpecificDisparityData
-    ${INDIGO_LIB}
     ${catkin_LIBRARIES}
 )
-    
+
 # ___________ INSTALL ______________
 
 install(TARGETS ros_indigosdk_node
