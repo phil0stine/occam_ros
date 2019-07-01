@@ -144,7 +144,7 @@ public:
     return req;
   }
   virtual bool isRequested() = 0;
-  virtual void publish(void* data, const ros::Time& now) = 0;
+  virtual void publish(void* data) = 0;
 };
 
 // _________________________________________________
@@ -173,7 +173,7 @@ public:
       ROS_INFO_THROTTLE(5,"subscribers of data %s = %i",dataNameString(req).c_str(),pub.getNumSubscribers());
     return pub.getNumSubscribers()>0;
   }
-  virtual void publish(void* data, const ros::Time& now) {
+  virtual void publish(void* data) {
     OccamImage* img0 = (OccamImage*)data;
     if (!img0)
       return;
@@ -197,12 +197,15 @@ public:
       break;
     }
 
+    ros::Time stamp;
+    stamp.fromNSec(img0->time_ns);
+
     int width = img0->width;
     int height = img0->height;
 
     sensor_msgs::CameraInfo info;
     info.header.frame_id = "occam";
-    info.header.stamp = now;
+    info.header.stamp = stamp;
     info.height = height;
     info.width = width;
     info.distortion_model = "plumb_bob";
@@ -228,7 +231,7 @@ public:
 
     sensor_msgs::Image img1;
     img1.header.frame_id = "occam";
-    img1.header.stamp = now;
+    img1.header.stamp = stamp;
     img1.encoding = image_encoding;
     img1.height = height;
     img1.width = width;
@@ -268,15 +271,19 @@ public:
       ROS_INFO_THROTTLE(5,"subscribers of data %s = %i",dataNameString(req).c_str(),pub.getNumSubscribers());
     return pub.getNumSubscribers()>0;
   }
-  virtual void publish(void* data, const ros::Time& now) {
+  virtual void publish(void* data) {
     OccamPointCloud* pc0 = (OccamPointCloud*)data;
     if (!pc0)
       return;
 
     ROS_INFO_THROTTLE(1,"sending data %s...",dataNameString(req).c_str());
 
+    ros::Time stamp;
+    stamp.fromNSec(pc0->time_ns);
+
     sensor_msgs::PointCloud pc1;
     pc1.header.frame_id = "occam";
+    pc1.header.stamp = stamp;
     pc1.points.resize(pc0->point_count);
     for (int j=0,k=0;j<pc0->point_count;++j,k+=3) {
       geometry_msgs::Point32& p1 = pc1.points[j];
@@ -733,9 +740,8 @@ public:
     if(!reportError(r))
         return false;
 
-    ros::Time now = ros::Time::now();
     for (int j=0;j<reqs.size();++j)
-      reqs_pubs[j]->publish(data[j], now);
+      reqs_pubs[j]->publish(data[j]);
 
     return true;
   }
