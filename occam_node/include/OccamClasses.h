@@ -24,6 +24,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/fill_image.h>
 #include <sensor_msgs/PointCloud.h>
+#include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/ChannelFloat32.h>
 #include <geometry_msgs/Point32.h>
 #include <image_transport/image_transport.h>
@@ -31,6 +32,7 @@
 #include <dynamic_reconfigure/Config.h>
 #include <dynamic_reconfigure/ConfigDescription.h>
 #include <dynamic_reconfigure/Reconfigure.h>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "indigo.h"
 //#include "/home/jonas/git/occam/occam_sdk/include/indigo.h"
 
@@ -149,17 +151,22 @@ public:
 // IMAGE PUBLISHER CLASS
 
 class ImagePublisher : public Publisher {
-  image_transport::Publisher pub;
+  image_transport::CameraPublisher pub;
   OccamDataName req;
   std::atomic<int> subscribers;
 public:
+  std::array<double, 5> D;
+  std::array<double, 9> K;
+  std::array<double, 9> R;
+  std::array<double, 3> T;
   ImagePublisher(OccamDataName _req, image_transport::ImageTransport it)
     : Publisher(_req),
       req(_req) {
 
     std::string req_name = dataNameString(req);
     ROS_INFO("advertising %s",req_name.c_str());
-    pub = it.advertise(req_name, 1);
+    pub = it.advertiseCamera(req_name, 1);
+    K[0] = 0.0;
   }
   virtual bool isRequested() {
     if (pub.getNumSubscribers()>0)
@@ -193,6 +200,32 @@ public:
     int width = img0->width;
     int height = img0->height;
 
+    sensor_msgs::CameraInfo info;
+    info.header.frame_id = "occam";
+    info.header.stamp = now;
+    info.height = height;
+    info.width = width;
+    info.distortion_model = "plumb_bob";
+    std::vector<double> ASDF;
+    for (int i=0; i < D.size(); ++i)
+      info.D[i] = D[i];
+    for (int i=0; i < K.size(); ++i)
+      info.K[i] = K[i];
+    for (int i=0; i < R.size(); ++i)
+      info.R[i] = R[i];
+    cv::Mat k_mat(3, 3, CV_64F, K.data());
+    cv::Mat r_mat(3, 3, CV_64F, R.data());
+    cv::Mat rt_mat(3, 4, CV_64F);
+    cv::Mat r_block(rt_mat(cv::Rect(0,0,3,3)));
+    r_mat.copyTo(r_block);
+    rt_mat.at<double>(0,3) = T[0];
+    rt_mat.at<double>(1,3) = T[1];
+    rt_mat.at<double>(2,3) = T[2];
+    cv::Mat p_mat = k_mat * rt_mat;
+    for (int i=0; i < 12; ++i) {
+      info.P[i] = p_mat.data[i];
+    }
+
     sensor_msgs::Image img1;
     img1.header.frame_id = "occam";
     img1.header.stamp = now;
@@ -209,7 +242,7 @@ public:
     for (int j=0;j<height;++j,dstp+=dst_step,srcp+=src_step)
       memcpy(dstp,srcp,width*bpp);
 
-    pub.publish(img1);
+    pub.publish(img1, info);
 
     occamFreeImage(img0);
   }
@@ -650,8 +683,33 @@ public:
 
   }
 
-  // ___________________
+  bool setIntrinsics(std::shared_ptr<Publisher>& pub) {
+    int r;
+    std::string data_name = dataNameString(pub->dataName());
+    std::size_t image_in_pub = data_name.find("image");
+    if (image_in_pub != std::string::npos) {
+      auto impub = std::dynamic_pointer_cast<ImagePublisher>(pub);
+      int image_idx = std::stoi(data_name.substr(image_in_pub+5));
+      if ((r = occamGetDeviceValuerv
+           (device, OccamParam(OCCAM_SENSOR_DISTORTION_COEFS0+image_idx),
+            impub->D.data(), 5)) != OCCAM_API_SUCCESS)
+        reportError(r);
+      if ((r = occamGetDeviceValuerv
+           (device, OccamParam(OCCAM_SENSOR_INTRINSICS0+image_idx),
+            impub->K.data(), 9)) != OCCAM_API_SUCCESS)
+        reportError(r);
+      if ((r = occamGetDeviceValuerv
+           (device, OccamParam(OCCAM_SENSOR_ROTATION0+image_idx),
+            impub->R.data(), 9)) != OCCAM_API_SUCCESS)
+        reportError(r);
+      if ((r = occamGetDeviceValuerv
+           (device, OccamParam(OCCAM_SENSOR_TRANSLATION0+image_idx),
+            impub->T.data(), 3)) != OCCAM_API_SUCCESS)
+        reportError(r);
+    }
+  }
 
+  // ___________________
   bool take_and_send_data() {
     int r;
 
@@ -663,6 +721,7 @@ public:
       if (pub->isRequested()) {
         reqs.push_back(pub->dataName());
         reqs_pubs.push_back(pub);
+        setIntrinsics(pub);
       }
 
     std::vector<OccamDataType> types;
