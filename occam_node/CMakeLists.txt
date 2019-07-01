@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ros_indigosdk)
+project(occam_node)
 find_package(catkin 
 	REQUIRED COMPONENTS 
 		image_transport 
 		roscpp 
 		std_msgs 
 		sensor_msgs 
-        camera_info_manager)
+                camera_info_manager
+                occam_sdk)
 
 
 set(ROS_BUILD_TYPE Release)
@@ -25,35 +26,30 @@ catkin_package(
 		roscpp 
 		std_msgs 
 		sensor_msgs
+                occam_sdk
         camera_info_manager
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -Wno-format-extra-args")
 
-if (NOT INDIGOSDK_PATH)
-  message(FATAL_ERROR "You must specify the location of the corresponding indigosdk using cmake option -DINDIGOSDK_PATH=<path>")
-endif()
-
 include_directories(
 	${catkin_INCLUDE_DIRS}
-	${INDIGOSDK_PATH}/include
 )
-add_subdirectory(${INDIGOSDK_PATH} indigosdk)
 
 add_executable(ros_indigosdk_node nodes/ros_indigosdk_node.cpp)
-target_link_libraries(ros_indigosdk_node indigo ${catkin_LIBRARIES})
+target_link_libraries(ros_indigosdk_node ${catkin_LIBRARIES})
 
 add_executable(rectify nodes/rectify.cpp)
-target_link_libraries(rectify indigo ${catkin_LIBRARIES})
+target_link_libraries(rectify ${catkin_LIBRARIES})
 
 add_executable(cloud nodes/cloud.cpp)
-target_link_libraries(cloud indigo ${catkin_LIBRARIES})
+target_link_libraries(cloud ${catkin_LIBRARIES})
 
 add_executable(stitch nodes/stitch.cpp)
-target_link_libraries(stitch indigo ${catkin_LIBRARIES})
+target_link_libraries(stitch ${catkin_LIBRARIES})
 
 add_executable(imgproc nodes/imgproc.cpp)
-target_link_libraries(imgproc indigo ${catkin_LIBRARIES})
+target_link_libraries(imgproc ${catkin_LIBRARIES})
 
 install(TARGETS ros_indigosdk_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

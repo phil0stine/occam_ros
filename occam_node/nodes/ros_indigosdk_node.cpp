@@ -127,32 +127,121 @@ public:
     return req;
   }
   virtual bool isRequested() = 0;
-  virtual void publish(void* data, const ros::Time& now) = 0;
+  virtual void publish(void* data) = 0;
 };
 
 class ImagePublisher : public Publisher {
-  image_transport::Publisher pub;
+  image_transport::CameraPublisher pub;
   OccamDataName req;
+  OccamDevice* device;
   bool is_color;
   std::atomic<int> subscribers;
   unsigned seq;
+  int sid;
 public:
-  ImagePublisher(OccamDataName _req, image_transport::ImageTransport it, bool _is_color)
+  std::array<double, 5> D;
+  std::array<double, 9> K;
+  std::array<double, 9> R;
+  std::array<double, 3> T;
+
+  ImagePublisher(OccamDataName _req, image_transport::ImageTransport it, bool _is_color,
+                 OccamDevice* dev)
     : Publisher(_req),
       req(_req),
       is_color(_is_color),
       seq(0) {
 
     std::string req_name = dataNameString(req);
+    std::size_t image_in_pub = req_name.find("image");
+    sid = std::stoi(req_name.substr(image_in_pub + 5));
     ROS_INFO("advertising %s",req_name.c_str());
-    pub = it.advertise(req_name, 1);
+    pub = it.advertiseCamera(req_name, 1);
+    K[0] = 0.0;
+    device = dev;
+  }
+  sensor_msgs::CameraInfo getInfoMsg(const sensor_msgs::Image& img) {
+    sensor_msgs::CameraInfo ci;
+
+    double D[5], K[9], R[9], T[3];
+
+    int binning_mode = OCCAM_BINNING_DISABLED;
+    occamGetDeviceValuei(device, OCCAM_BINNING_MODE, &binning_mode);
+
+    OCCAM_CHECK(occamGetDeviceValuerv
+                (device, OccamParam(OCCAM_SENSOR_DISTORTION_COEFS0+seq), D, 5));
+    OCCAM_CHECK(occamGetDeviceValuerv
+                (device, OccamParam(OCCAM_SENSOR_INTRINSICS0+seq), K, 9));
+    OCCAM_CHECK(occamGetDeviceValuerv
+                (device, OccamParam(OCCAM_SENSOR_ROTATION0+seq), R, 9));
+    OCCAM_CHECK(occamGetDeviceValuerv
+                (device, OccamParam(OCCAM_SENSOR_TRANSLATION0+seq), T, 3));
+
+    ci.header = img.header;
+    ci.height = img.height;
+    ci.width = img.width;
+
+
+    ci.distortion_model = "plumb_bob";
+    ci.D.assign(D,D+5);
+
+    ci.K[0] = K[0];
+    ci.K[1] = K[1];
+    ci.K[2] = K[2];
+    ci.K[3] = K[3];
+    ci.K[4] = K[4];
+    ci.K[5] = K[5];
+    ci.K[6] = K[6];
+    ci.K[7] = K[7];
+    ci.K[8] = K[8];
+
+    ci.R[0] = 1;
+    ci.R[1] = 0;
+    ci.R[2] = 0;
+    ci.R[3] = 0;
+    ci.R[4] = 1;
+    ci.R[5] = 0;
+    ci.R[6] = 0;
+    ci.R[7] = 0;
+    ci.R[8] = 1;
+
+    ci.P[0] = R[0];
+    ci.P[1] = R[1];
+    ci.P[2] = R[2];
+    ci.P[3] = T[0];
+    ci.P[4] = R[3];
+    ci.P[5] = R[4];
+    ci.P[6] = R[5];
+    ci.P[7] = T[1];
+    ci.P[8] = R[6];
+    ci.P[9] = R[7];
+    ci.P[10] = R[8];
+    ci.P[11] = T[2];
+
+    if (binning_mode == OCCAM_BINNING_2x2) {
+      ci.binning_x = 2;
+      ci.binning_y = 2;
+    } else if (binning_mode == OCCAM_BINNING_4x4) {
+      ci.binning_x = 4;
+      ci.binning_y = 4;
+    } else {
+      ci.binning_x = 1;
+      ci.binning_y = 1;
+    }
+
+    ci.roi.x_offset = 0;
+    ci.roi.y_offset = 0;
+    ci.roi.height = 0;
+    ci.roi.width = 0;
+    ci.roi.do_rectify = false;
+
+    return ci;
   }
   virtual bool isRequested() {
     if (pub.getNumSubscribers()>0)
       ROS_INFO_THROTTLE(5,"subscribers of data %s = %i",dataNameString(req).c_str(),pub.getNumSubscribers());
     return pub.getNumSubscribers()>0;
   }
-  virtual void publish(void* data, const ros::Time& now) {
+  virtual void publish(void* data) {
     OccamImage* img0 = (OccamImage*)data;
     if (!img0)
       return;
@@ -176,13 +265,16 @@ public:
       break;
     }
 
+    ros::Time stamp;
+    stamp.fromNSec(img0->time_ns);
+
     int width = img0->width;
     int height = img0->height;
 
     sensor_msgs::Image img1;
     img1.header.seq = seq++;
     img1.header.frame_id = "occam";
-    img1.header.stamp = now;
+    img1.header.stamp = stamp;
     img1.encoding = image_encoding;
     img1.height = height;
     img1.width = width;
@@ -196,7 +288,8 @@ public:
     for (int j=0;j<height;++j,dstp+=dst_step,srcp+=src_step)
       memcpy(dstp,srcp,width*bpp);
 
-    pub.publish(img1);
+    sensor_msgs::CameraInfo info1 = getInfoMsg(img1);
+    pub.publish(img1, info1);
 
     occamFreeImage(img0);
   }
@@ -221,17 +314,20 @@ public:
       ROS_INFO_THROTTLE(5,"subscribers of data %s = %i",dataNameString(req).c_str(),pub.getNumSubscribers());
     return pub.getNumSubscribers()>0;
   }
-  virtual void publish(void* data, const ros::Time& now) {
+  virtual void publish(void* data) {
     OccamPointCloud* pc0 = (OccamPointCloud*)data;
     if (!pc0)
       return;
 
     ROS_INFO_THROTTLE(1,"sending data %s...",dataNameString(req).c_str());
 
+    ros::Time stamp;
+    stamp.fromNSec(pc0->time_ns);
+
     sensor_msgs::PointCloud2 pc2;
     pc2.header.seq = seq++;
     pc2.header.frame_id = "occam";
-    pc2.header.stamp = now;
+    pc2.header.stamp = stamp;
 
     pc2.height = 1;
     pc2.width = pc0->point_count;
@@ -559,7 +655,7 @@ public:
     OCCAM_CHECK(occamDeviceAvailableData(device, &req_count, &req, &types));
     for (int j=0;j<req_count;++j) {
       if (types[j] == OCCAM_IMAGE)
-	data_pubs.push_back(std::make_shared<ImagePublisher>(req[j],it,is_color));
+	data_pubs.push_back(std::make_shared<ImagePublisher>(req[j],it,is_color,device));
       else if (types[j] == OCCAM_POINT_CLOUD)
 	data_pubs.push_back(std::make_shared<PointCloudPublisher>(req[j],nh));
     }
@@ -606,11 +702,9 @@ public:
     if (r != OCCAM_API_SUCCESS)
       return false;
 
-    ros::Time now = ros::Time::now();
     for (int j=0;j<reqs.size();++j)
-      reqs_pubs[j]->publish(data[j], now);
-    publishCameraInfo(now);
-    
+      reqs_pubs[j]->publish(data[j]);
+
     return true;
   }
 
@@ -627,7 +721,7 @@ public:
   }
 
 private:
-  void publishCameraInfo(const ros::Time& now) {
+  void publishCameraInfo(const ros::Time& stamp) {
 
     static unsigned header_seq = 0;
 
@@ -663,7 +757,7 @@ private:
       sensor_msgs::CameraInfo ci;
 
       ci.header.seq = header_seq++;
-      ci.header.stamp = now;
+      ci.header.stamp = stamp;
       ci.header.frame_id = "occam";
       
       ci.width = sensor_width;
