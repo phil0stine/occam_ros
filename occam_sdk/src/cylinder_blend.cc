@@ -36,9 +36,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <mutex>
 #include <iostream>
-
+#include <math.h>
 #undef min
 #undef max
+
+using namespace std;
 
 struct BlendRemapSensor {
   int width;

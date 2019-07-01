@@ -73,6 +73,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <assert.h>
 #include <string.h>
+#include <math.h>
 #undef min
 #undef max
 

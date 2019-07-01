@@ -1,0 +1,15 @@
+<package>
+  <name>occam_sdk</name>
+  <version>2.0.0</version>
+  <description>Occam Indigo SDK</description>
+
+  <license>GPLv2</license>
+
+  <maintainer email="info@occamvisiongroup.com">Occam Vision Group</maintainer>
+  <author email="info@occamvisiongroup.com">Occam Vision Group</author>
+
+  <url type="website">http://occamvisiongroup.com</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>

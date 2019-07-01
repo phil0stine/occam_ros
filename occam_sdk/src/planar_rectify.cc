@@ -76,8 +76,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 #undef min
 #undef max
+
+using namespace std;
 
 class SVD {
   std::vector<double> _buf;

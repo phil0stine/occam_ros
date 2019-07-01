@@ -15,7 +15,7 @@
 
 
 #include "../include/OccamClasses.h"
-
+using namespace std;
 int main(int argc, char **argv) {
   OCCAM_CHECK(occamInitialize());
   ros::init(argc, argv, "occam");

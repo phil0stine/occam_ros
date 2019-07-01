@@ -31,9 +31,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <algorithm>
 #include <string.h>
+#include <math.h>
 #undef min
 #undef max
 
+using namespace std;
 static void cpuImageFilter(const uint8_t* srcp, uint8_t* dstp,
 			   int src_step, int dst_step,
 			   int width, int height,
