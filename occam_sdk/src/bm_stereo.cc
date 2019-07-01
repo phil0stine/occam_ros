@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -883,7 +883,7 @@ public:
     setDefaultValuei(OCCAM_BM_MIN_DISPARITY,0);
     setDefaultValuei(OCCAM_BM_NUM_DISPARITIES,64);
     setDefaultValuei(OCCAM_BM_TEXTURE_THRESHOLD,10);
-    setDefaultValuei(OCCAM_BM_UNIQUENESS_RATIO,60);
+    setDefaultValuei(OCCAM_BM_UNIQUENESS_RATIO,12);
     setDefaultValuei(OCCAM_BM_SPECKLE_RANGE,120);
     setDefaultValuei(OCCAM_BM_SPECKLE_WINDOW_SIZE,400);
   }

@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -114,28 +114,24 @@ int main(int argc, const char** argv) {
   std::cout<<std::endl;
 
   //////////////////////////////////////////////////////////////////////////////////
-  // offset blending parameters
+  // cylindrical blending parameters
 
-  int offset_preset_count;
-  int offset_preset;
-  if ((r = occamGetDeviceValuei(device, OCCAM_STITCHING_OFFSET_PRESET_COUNT, &offset_preset_count)) != OCCAM_API_SUCCESS)
+  int stitching_radius;
+  int stitching_rotation;
+  int stitching_scalewidth;
+  int stitching_crop;
+  if ((r = occamGetDeviceValuei(device, OCCAM_STITCHING_RADIUS, &stitching_radius)) != OCCAM_API_SUCCESS)
     reportError(r);
-  if ((r = occamGetDeviceValuei(device, OCCAM_STITCHING_OFFSET_PRESET, &offset_preset)) != OCCAM_API_SUCCESS)
+  if ((r = occamGetDeviceValuei(device, OCCAM_STITCHING_ROTATION, &stitching_rotation)) != OCCAM_API_SUCCESS)
     reportError(r);
-  std::cout<<offset_preset_count<<" offset presets, default is "<<offset_preset<<std::endl;
-  std::vector<int> offsetx(sensor_count-1);
-  std::vector<int> offsety(sensor_count-1);
-  for (int j=0;j<offset_preset_count;++j) {
-    std::cout<<"preset "<<j<<":"<<std::endl;
-    if ((r = occamSetDeviceValuei(device, OCCAM_STITCHING_OFFSET_PRESET, j)) != OCCAM_API_SUCCESS)
-      reportError(r);
-    if ((r = occamGetDeviceValueiv(device, OCCAM_STITCHING_OFFSET_X, &offsetx[0], sensor_count-1)) != OCCAM_API_SUCCESS)
-      reportError(r);
-    if ((r = occamGetDeviceValueiv(device, OCCAM_STITCHING_OFFSET_Y, &offsety[0], sensor_count-1)) != OCCAM_API_SUCCESS)
-      reportError(r);
-    std::cout<<"  offsetx: "<<matstr(1,sensor_count-1,&offsetx[0])<<std::endl;
-    std::cout<<"  offsety: "<<matstr(1,sensor_count-1,&offsety[0])<<std::endl;
-  }
+  if ((r = occamGetDeviceValuei(device, OCCAM_STITCHING_SCALEWIDTH, &stitching_scalewidth)) != OCCAM_API_SUCCESS)
+    reportError(r);
+  if ((r = occamGetDeviceValuei(device, OCCAM_STITCHING_CROP, &stitching_crop)) != OCCAM_API_SUCCESS)
+    reportError(r);
+  std::cout<<"stitching_radius: "<<stitching_radius<<std::endl;
+  std::cout<<"stitching_rotation: "<<stitching_rotation<<std::endl;
+  std::cout<<"stitching_scalewidth: "<<stitching_scalewidth<<std::endl;
+  std::cout<<"stitching_crop: "<<stitching_crop<<std::endl;
 
   occamCloseDevice(device);
   occamFreeDeviceList(device_list);

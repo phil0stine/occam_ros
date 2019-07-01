@@ -1,12 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(occam_sdk)
-
-find_package(catkin)
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES indigo
-  )
+project(indigosdk)
 
 set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
@@ -26,10 +19,6 @@ if (WIN32)
   add_subdirectory(third/libusb)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third/libusb/libusb)
-
-  set(USE_LIBUSBK 1)
-  add_definitions(-DHAVE_LIBUSBK)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third/libusbk)
 
   add_subdirectory(third/cyusb)
   set(USE_CYUSB 1)
@@ -53,7 +42,7 @@ if (OCCAM_SSE2)
   endif()
 endif()
 
-option(USE_OPENGL "Include support for OpenGL backend" ON)
+option(USE_OPENGL "Include support for OpenGL backend" OFF)
 option(USE_OPENCV "Use OpenCV" OFF)
 if (MSVC)
     option(INDIGOSDK_MSVC_STATIC_CRT "Use MSVC runtime library DLL" ON)
@@ -82,8 +71,7 @@ option(DEVICE_TGMT9V02 "Build support for tgmt9v022" OFF)
 option(DEVICE_BU3AR0330 "Build support for bu3ar0330" OFF)
 
 if(USE_OPENCV)
-  #include(FindOpenCV.cmake)
-  find_package(OpenCV REQUIRED)
+  include(FindOpenCV.cmake)
   message("OpenCV include path: ${OpenCV_INCLUDE_DIRS}")
   include_directories(${OpenCV_INCLUDE_DIRS} ${OpenCV_DIR})
 endif()
@@ -141,7 +129,7 @@ add_library(indigo SHARED ${indigo_srcs})
 set_target_properties(indigo PROPERTIES COMPILE_FLAGS -DOCCAM_SDK_BUILD=1)
 
 if (UNIX)
-  target_link_libraries(indigo ${PC_LIBUSB_LIBRARIES})
+  target_link_libraries(indigo ${PC_LIBUSB_LIBRARIES} pthread)
 endif()
 if (WIN32)
   target_link_libraries(indigo libusb109)
@@ -156,10 +144,7 @@ if (USE_OPENGL)
   endif()
 endif()
 if(USE_OPENCV)
-  target_link_libraries(indigo ${OpenCV_LIBS_OPT})
-endif()
-if(USE_LIBUSBK)
-  target_link_libraries(indigo ${CMAKE_CURRENT_SOURCE_DIR}/third/libusbk/libusbK.lib)
+  target_link_libraries(indigo ${OpenCV_LIBS})
 endif()
 if(USE_CYUSB)
   target_link_libraries(indigo cyusb)
@@ -196,10 +181,20 @@ if(USE_OPENCV)
   add_executable(read_images_opencv examples/read_images_opencv.cc)
   target_link_libraries(read_images_opencv indigo ${OpenCV_LIBS})
 
-  add_executable(read_images_periodic examples/read_images_periodic.cc)
-  target_link_libraries(read_images_periodic indigo ${OpenCV_LIBS} pthread)
+  add_executable(record_raw examples/record_raw.cc)
+  target_link_libraries(record_raw indigo ${OpenCV_LIBS})
 
-  # needs OpenCV 3.0
-  #add_executable(offline_stitch examples/offline_stitch.cc)
-  #target_link_libraries(offline_stitch indigo ${OpenCV_LIBS_OPT})
+  add_executable(process_raw examples/process_raw.cc)
+  target_link_libraries(process_raw indigo ${OpenCV_LIBS})
+
+  add_executable(read_images_periodic examples/read_images_periodic.cc)
+  target_link_libraries(read_images_periodic indigo ${OpenCV_LIBS})
+
+  add_executable(offline_stitch examples/offline_stitch.cc)
+  target_link_libraries(offline_stitch indigo ${OpenCV_LIBS})
+
+  if (WIN32)
+    add_executable(imgseq_video examples/imgseq_video.cc)
+    target_link_libraries(imgseq_video indigo ${OpenCV_LIBS})
+  endif()
 endif()

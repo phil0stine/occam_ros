@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -27,15 +27,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "indigo.h"
 #include "gl_utils.h"
 #include "module_utils.h"
+#include "math.h"
 #include <vector>
 #include <memory>
 #include <algorithm>
 #include <string.h>
-#include <math.h>
 #undef min
 #undef max
 
-using namespace std;
 static void cpuImageFilter(const uint8_t* srcp, uint8_t* dstp,
 			   int src_step, int dst_step,
 			   int width, int height,

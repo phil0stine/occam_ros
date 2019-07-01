@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -29,11 +29,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "omni_libusb.h"
 #include "serialize_utils.h"
 #include "image_collect.h"
+#include "math.h"
 #include <algorithm>
 #include <iostream>
 #include <assert.h>
 #include <string.h>
-#include <math.h>
 #undef min
 #undef max
 
@@ -1147,17 +1147,6 @@ public:
       blendImages(blend_handle,{img0_raw0,img0_raw1,img0_raw2,img0_raw3,img0_raw4});
     out.set(OCCAM_STITCHED_IMAGE0,img0_blend);
 
-    img0_raw0 = makeMonoImage(img0_raw0);
-    img0_raw1 = makeMonoImage(img0_raw1);
-    img0_raw2 = makeMonoImage(img0_raw2);
-    img0_raw3 = makeMonoImage(img0_raw3);
-    img0_raw4 = makeMonoImage(img0_raw4);
-    img1_raw0 = makeMonoImage(img1_raw0);
-    img1_raw1 = makeMonoImage(img1_raw1);
-    img1_raw2 = makeMonoImage(img1_raw2);
-    img1_raw3 = makeMonoImage(img1_raw3);
-    img1_raw4 = makeMonoImage(img1_raw4);
-
     std::shared_ptr<void> rectify_handle = module(OCCAM_STEREO_RECTIFIER0);
     double* Dp[] = {D[0],D[5],D[1],D[6],D[2],D[7],D[3],D[8],D[4],D[9]};
     double* Kp[] = {K[0],K[5],K[1],K[6],K[2],K[7],K[3],K[8],K[4],K[9]};
@@ -1189,12 +1178,23 @@ public:
     out.set(OCCAM_RECTIFIED_IMAGE8,img0_raw4r);
     out.set(OCCAM_RECTIFIED_IMAGE9,img1_raw4r);
 
+    auto img0_raw0rm = makeMonoImage(img0_raw0r);
+    auto img0_raw1rm = makeMonoImage(img0_raw1r);
+    auto img0_raw2rm = makeMonoImage(img0_raw2r);
+    auto img0_raw3rm = makeMonoImage(img0_raw3r);
+    auto img0_raw4rm = makeMonoImage(img0_raw4r);
+    auto img1_raw0rm = makeMonoImage(img1_raw0r);
+    auto img1_raw1rm = makeMonoImage(img1_raw1r);
+    auto img1_raw2rm = makeMonoImage(img1_raw2r);
+    auto img1_raw3rm = makeMonoImage(img1_raw3r);
+    auto img1_raw4rm = makeMonoImage(img1_raw4r);
+
     std::shared_ptr<void> stereo_handle = module(OCCAM_STEREO_MATCHER0);
-    auto disp0 = computeDisparityImage(stereo_handle,0,img0_raw0r,img1_raw0r);
-    auto disp1 = computeDisparityImage(stereo_handle,1,img0_raw1r,img1_raw1r);
-    auto disp2 = computeDisparityImage(stereo_handle,2,img0_raw2r,img1_raw2r);
-    auto disp3 = computeDisparityImage(stereo_handle,3,img0_raw3r,img1_raw3r);
-    auto disp4 = computeDisparityImage(stereo_handle,4,img0_raw4r,img1_raw4r);
+    auto disp0 = computeDisparityImage(stereo_handle,0,img0_raw0rm,img1_raw0rm);
+    auto disp1 = computeDisparityImage(stereo_handle,1,img0_raw1rm,img1_raw1rm);
+    auto disp2 = computeDisparityImage(stereo_handle,2,img0_raw2rm,img1_raw2rm);
+    auto disp3 = computeDisparityImage(stereo_handle,3,img0_raw3rm,img1_raw3rm);
+    auto disp4 = computeDisparityImage(stereo_handle,4,img0_raw4rm,img1_raw4rm);
 
     auto disp0r = unrectifyImage(rectify_handle,0,disp0);
     auto disp1r = unrectifyImage(rectify_handle,2,disp1);
@@ -1202,11 +1202,11 @@ public:
     auto disp3r = unrectifyImage(rectify_handle,6,disp3);
     auto disp4r = unrectifyImage(rectify_handle,8,disp4);
 
-    out.set(OCCAM_DISPARITY_IMAGE0,disp0r);
-    out.set(OCCAM_DISPARITY_IMAGE1,disp1r);
-    out.set(OCCAM_DISPARITY_IMAGE2,disp2r);
-    out.set(OCCAM_DISPARITY_IMAGE3,disp3r);
-    out.set(OCCAM_DISPARITY_IMAGE4,disp4r);
+    out.set(OCCAM_DISPARITY_IMAGE0,disp0);
+    out.set(OCCAM_DISPARITY_IMAGE1,disp1);
+    out.set(OCCAM_DISPARITY_IMAGE2,disp2);
+    out.set(OCCAM_DISPARITY_IMAGE3,disp3);
+    out.set(OCCAM_DISPARITY_IMAGE4,disp4);
     out.set(OCCAM_TILED_DISPARITY_IMAGE,htile({disp0r,disp1r,disp2r,disp3r,disp4r}));
 
     out.set(OCCAM_POINT_CLOUD0,computePointCloud(rectify_handle,0,img0_raw0r,disp0));
@@ -1214,6 +1214,10 @@ public:
     out.set(OCCAM_POINT_CLOUD2,computePointCloud(rectify_handle,4,img0_raw2r,disp2));
     out.set(OCCAM_POINT_CLOUD3,computePointCloud(rectify_handle,6,img0_raw3r,disp3));
     out.set(OCCAM_POINT_CLOUD4,computePointCloud(rectify_handle,8,img0_raw4r,disp4));
+    out.set(OCCAM_STITCHED_POINT_CLOUD,computePointCloud(rectify_handle,
+					    {0,2,4,6,8},
+					    {img0_raw0r,img0_raw1r,img0_raw2r,img0_raw3r,img0_raw4r},
+							 {disp0,disp1,disp2,disp3,disp4}));
 
     {
       auto htile0 = htile({img0_raw0,img0_raw1,img0_raw2,img0_raw3,img0_raw4});
@@ -1285,6 +1289,7 @@ public:
     available_data.push_back(std::make_pair(OCCAM_POINT_CLOUD2,OCCAM_POINT_CLOUD));
     available_data.push_back(std::make_pair(OCCAM_POINT_CLOUD3,OCCAM_POINT_CLOUD));
     available_data.push_back(std::make_pair(OCCAM_POINT_CLOUD4,OCCAM_POINT_CLOUD));
+    available_data.push_back(std::make_pair(OCCAM_STITCHED_POINT_CLOUD,OCCAM_POINT_CLOUD));
   }
 
 };

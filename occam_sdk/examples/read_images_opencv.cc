@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -244,9 +244,9 @@ int main(int argc, const char** argv) {
     }
 
     cv::Mat img;
-    if (image && image->format == OCCAM_GRAY8)
+    if (image && image->format == OCCAM_GRAY8) {
       img = cv::Mat_<uchar>(image->height,image->width,(uchar*)image->data[0],image->step[0]);
-    else if (image && image->format == OCCAM_RGB24) {
+    } else if (image && image->format == OCCAM_RGB24) {
       img = cv::Mat_<cv::Vec3b>(image->height,image->width,(cv::Vec3b*)image->data[0],image->step[0]);
       cv::Mat img1;
       cv::cvtColor(img, img1, cv::COLOR_BGR2RGB);

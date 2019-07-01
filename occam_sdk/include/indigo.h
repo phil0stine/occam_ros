@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -68,7 +68,8 @@ OCCAM_API void* occamAlloc(int size);
 OCCAM_API void occamFree(void* ptr);
 
 typedef struct _OccamDeviceListEntry {
-  /*! Unique device identifier.
+  /*!
+    Unique device identifier.
     This has the form MODEL:SERIAL where MODEL is the model name of the device (e.g., omni5u3mt9v022) and serial is an 8 byte unique number that uniquely identifies the device. The serial number is always read from the device itself and is transferable across host machines.
    */
   char* cid;
@@ -665,7 +666,7 @@ OCCAM_API int occamWriteRegister(OccamDevice* device, uint32_t addr, uint32_t va
 OCCAM_API int occamReadRegister(OccamDevice* device, uint32_t addr, uint32_t* value);
 
 /*!
-  Write a register on the device.
+  Write to device storage.
   @param device pointer to open device.
   @param target the device request type. These are device specific values.
   @param addr the data address. These are device specific values.
@@ -675,7 +676,7 @@ OCCAM_API int occamReadRegister(OccamDevice* device, uint32_t addr, uint32_t* va
  */
 OCCAM_API int occamWriteStorage(OccamDevice* device, uint32_t target, uint32_t addr, uint32_t len, const uint8_t* data);
 /*!
-  Write a register on the device.
+  Read from device storage.
   @param device pointer to open device.
   @param target the device request type. These are device specific values.
   @param addr the data address. These are device specific values.

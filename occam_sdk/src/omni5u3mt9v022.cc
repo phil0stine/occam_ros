@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -326,6 +326,12 @@ class OccamDevice_omni5u3mt9v022 : public OmniDevice {
       setMinMaxValues(OCCAM_EXPOSURE_MICROSECONDS,1,int(480*32.538));
       if (get_exposure()>480)
 	set_exposure(480);
+    } else if (target_fps == 45) {
+      program("w0xdf05=45;w0xcc02=1;w0xcc01=0xb8;w0x6=200");
+      setMinMaxValues(OCCAM_EXPOSURE,1,720);
+      setMinMaxValues(OCCAM_EXPOSURE_MICROSECONDS,1,int(720*32.538));
+      if (get_exposure()>720)
+	set_exposure(720);
     } else if (target_fps == 30) {
       program("w0xdf05=30;w0xcc02=1;w0xcc01=0xb8;w0x6=525");
       setMinMaxValues(OCCAM_EXPOSURE,1,960);
@@ -602,6 +608,7 @@ public:
 		   std::bind(&OccamDevice_omni5u3mt9v022::set_target_fps,this,_1));
     std::vector<std::pair<std::string,int> > target_fps_values;
     target_fps_values.push_back(std::make_pair("60",60));
+    target_fps_values.push_back(std::make_pair("45",45));
     target_fps_values.push_back(std::make_pair("30",30));
     target_fps_values.push_back(std::make_pair("15",15));
     target_fps_values.push_back(std::make_pair("1",1));
@@ -740,6 +747,9 @@ public:
 		    std::bind(&OccamDevice_omni5u3mt9v022::set_T,this,4,_1));
 
     program("w0xdf06=0;w0xcc02=1;w0xcc01=0xb8;W0xd(0x30)=0x30");
+
+    if (minimumFirmware(1,6,0))
+      program("w0xdf06=1;w0xcc02=2;w0xcc01=0x94;w8140=1");
 
     for (int j=0;j<5;++j) {
       double* Dj = D[j];

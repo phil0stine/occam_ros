@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif // _WIN32
 
 struct module_info_cmp {
-  bool operator() (IOccamModuleInfo* lhs, IOccamModuleInfo* rhs) {
+  bool operator() (IOccamModuleInfo* lhs, IOccamModuleInfo* rhs) const {
     OccamModuleClass lhs_class;
     int lhs_priority;
     int lhs_version;

@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -27,8 +27,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ./emit_raw | ~/ffmpeg/inst/bin/ffmpeg -f rawvideo -pixel_format gray -video_size 3760x480 -framerate 1 -i - -me_method epzs -qmin 3 -r 1 -flags +global_header  http://192.168.1.130:8090/feed1.ffm
 
 #include "indigo.h"
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static int dev_index = 0;
 

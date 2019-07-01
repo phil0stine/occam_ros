@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -2000,7 +2000,7 @@ int OccamDeviceBase::saveSettings() {
     const ModuleGroupInfo& mg = _module_groups[j];
     if (mg.modules.empty())
       continue;
-    uint8_t module_count = mg.modules.size();
+    uint8_t module_count = uint8_t(mg.modules.size());
     uint32_t selector_id = mg.id;
     const std::string& selected_name = mg.modules[mg.selected_index].name;
     sb<<module_count<<selector_id<<selected_name;

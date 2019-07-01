@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -69,6 +69,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "module_utils.h"
 #include "remap.h"
+#include "math.h"
 #include <algorithm>
 #include <mutex>
 #include <thread>
@@ -76,11 +77,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <string.h>
 #include <assert.h>
-#include <math.h>
+#include <iostream>
 #undef min
 #undef max
-
-using namespace std;
 
 class SVD {
   std::vector<double> _buf;
@@ -372,6 +371,7 @@ class OccamStereoRectifyImpl : public OccamStereoRectify, public OccamParameters
     double T0[3];
     double T1[3];
     double Q[16];
+    double H0[9];
     double C[16];
     double B0[9];
     double B1[9];
@@ -379,6 +379,8 @@ class OccamStereoRectifyImpl : public OccamStereoRectify, public OccamParameters
     std::shared_ptr<ImageRemap> rectifymap1;
     std::shared_ptr<ImageRemap> unrectifymap0;
     std::shared_ptr<ImageRemap> unrectifymap1;
+    std::vector<uint8_t> edge_mask0;
+    std::vector<uint8_t> edge_mask1;
   };
 
   struct Rep {
@@ -401,6 +403,7 @@ class OccamStereoRectifyImpl : public OccamStereoRectify, public OccamParameters
 		      const double* D, const double* K,
 		      const double* H, const double* P,
 		      double* B, ImageRemap& rectifymap,
+		      std::vector<uint8_t>& edge_mask,
 		      bool transposed) {
     double B0[] = {
       P[0] * H[0] + P[1] * H[3] + P[2] * H[6],
@@ -428,6 +431,9 @@ class OccamStereoRectifyImpl : public OccamStereoRectify, public OccamParameters
     B[7] = -(-B0[1] * B0[6] + B0[0] * B0[7]) * t4;
     B[8] = (-B0[1] * B0[3] + B0[0] * B0[4]) * t4;
 
+    edge_mask.resize(height*width);
+    const int max_edge_dist = 20;
+
     double u0 = K[2];
     double v0 = K[5];
     double fx = K[0];
@@ -437,8 +443,8 @@ class OccamStereoRectifyImpl : public OccamStereoRectify, public OccamParameters
     double p1 = D[2];
     double p2 = D[3];
     double k3 = D[4];
-    for (int i=0;i<height;++i) {
-      for (int j=0;j<width;++j) {
+    for (int i=0,ii=0;i<height;++i) {
+      for (int j=0;j<width;++j,++ii) {
 	int i0 = i * scale;
 	int j0 = j * scale;
 	if (transposed)
@@ -453,6 +459,8 @@ class OccamStereoRectifyImpl : public OccamStereoRectify, public OccamParameters
 	double u = fx*(x*kr + p1*_2xy + p2*(r2 + 2*x2)) + u0;
 	double v = fy*(y*kr + p1*(r2 + 2*y2) + p2*_2xy) + v0;
 	rectifymap.map(j,i,0,float(u),float(v));
+
+	edge_mask[ii] = u>max_edge_dist&&u<height-max_edge_dist&&v>max_edge_dist&&v<width-max_edge_dist;
       }
     }
   }
@@ -731,6 +739,7 @@ class OccamStereoRectifyImpl : public OccamStereoRectify, public OccamParameters
       R1[6],R1[7],R1[8],T1[2],
       0,0,0,1
     };
+
     SVD svd;
     double* W;
     double* Ut;
@@ -799,10 +808,12 @@ class OccamStereoRectifyImpl : public OccamStereoRectify, public OccamParameters
     p.unrectifymap1->addImage(map_width,map_height);
 
     initRectify(width, height, D0, K0, D1, K1, R, T, H0, H1, P0, P1, p.Q, true);
-    initRectifyMap(map_width, map_height, scale, D0, K0, H0, P0, p.B0, *p.rectifymap0, transposed);
-    initRectifyMap(map_width, map_height, scale, D1, K1, H1, P1, p.B1, *p.rectifymap1, transposed);
+    initRectifyMap(map_width, map_height, scale, D0, K0, H0, P0, p.B0, *p.rectifymap0, p.edge_mask0, transposed);
+    initRectifyMap(map_width, map_height, scale, D1, K1, H1, P1, p.B1, *p.rectifymap1, p.edge_mask1, transposed);
     initUnrectifyMap(width, height, scale, D0, K0, H0, P0, p.B0, *p.unrectifymap0, transposed);
     initUnrectifyMap(width, height, scale, D1, K1, H1, P1, p.B1, *p.unrectifymap1, transposed);
+
+    std::copy(H0,H0+9,p.H0);
   }
 
 public:
@@ -933,7 +944,8 @@ public:
       return OCCAM_API_NOT_INITIALIZED;
     int max_points = 0;
     for (int j=0;j<N;++j) {
-      if (disp0[j]->format != OCCAM_SHORT1)
+      if (disp0[j]->format != OCCAM_SHORT1 &&
+	  disp0[j]->format != OCCAM_FLOAT1)
 	return OCCAM_API_INVALID_FORMAT;
       int index = indices[j];
       int index0 = index>>1;
@@ -960,6 +972,8 @@ public:
     int scale = rep0->scale;
     bool transposed = rep0->transposed;
 
+    std::vector<float> dispf;
+
     for (int j=0;j<N;++j) {
       int index = indices[j];
       int index0 = index>>1;
@@ -967,7 +981,10 @@ public:
       SensorPair& p = rep0->pairs[index0];
       const double* Q = p.Q;
       const double* C = p.C;
+      const double* H0 = p.H0;
 
+      dispf.resize(disp0[j]->width);
+      
       uint8_t* img0p0 = img0[j]->data[0];
       int img0_step = img0[j]->step[0];
       int bpp = 0;
@@ -978,11 +995,24 @@ public:
 
       const uint8_t* srcp0 = (const uint8_t*)disp0[j]->data[0];
       int src_step = disp0[j]->step[0];
-      for (int y=0;y<disp0[j]->height;++y,srcp0+=src_step,img0p0+=img0_step) {
-    	int16_t* srcp = (int16_t*)srcp0;
+      for (int y=0,ii=0;y<disp0[j]->height;++y,srcp0+=src_step,img0p0+=img0_step) {
+    	int16_t* srcpi = (int16_t*)srcp0;
+    	float* srcpf = (float*)srcp0;
 	uint8_t* img0p = img0p0;
 
-    	for (int x=0,x3=0;x<disp0[j]->width;++x,img0p+=bpp) {
+	if (disp0[j]->format == OCCAM_SHORT1) {
+	  for (int x=0;x<disp0[j]->width;++x)
+	    dispf[x] = float(srcpi[x]);
+	} else if (disp0[j]->format == OCCAM_FLOAT1) {
+	  for (int x=0;x<disp0[j]->width;++x)
+	    dispf[x] = srcpf[x] * 16;
+	}
+	
+    	for (int x=0,x3=0;x<disp0[j]->width;++x,img0p+=bpp,++ii) {
+
+	  if (!p.edge_mask0[ii])
+	    continue;
+
 	  int x0 = x*scale;
 	  int y0 = y*scale;
 	  if (transposed)
@@ -992,7 +1022,7 @@ public:
 	  double qz = Q[8]*x0 + Q[9]*y0 + Q[11];
 	  double qw = Q[12]*x0 + Q[13]*y0 + Q[15];
 
-    	  int16_t d = srcp[x]*scale;
+    	  float d = dispf[x]*scale;
     	  if (d<0)
     	    continue;
     	  double w = 1./(qw + Q[14]*d);
@@ -1000,17 +1030,24 @@ public:
 	  float y1 = float((qy + Q[6]*d)*w);
 	  float z1 = float((qz + Q[10]*d)*w);
 
-	  float x2;
-	  float y2;
-	  float z2;
+	  if (!std::isfinite(z1) || z1 > 500 || z1 < 0)
+	    continue;
+
+	  float scalemm = 10.f;
+	  float x1a,x2;
+	  float y1a,y2;
+	  float z1a,z2;
 	  if (transform) {
-	    x2 = float(C[0]*x1+C[1]*y1+C[2]*z1+C[3]);
-	    y2 = float(C[4]*x1+C[5]*y1+C[6]*z1+C[7]);
-	    z2 = float(C[8]*x1+C[9]*y1+C[10]*z1+C[11]);
+	    x1a = float(H0[0]*x1+H0[1]*y1+H0[2]*z1) * scalemm;
+	    y1a = float(H0[3]*x1+H0[4]*y1+H0[5]*z1) * scalemm;
+	    z1a = float(H0[6]*x1+H0[7]*y1+H0[8]*z1) * scalemm;
+	    x2 = float(C[0]*x1a+C[1]*y1a+C[2]*z1a+C[3]);
+	    y2 = float(C[4]*x1a+C[5]*y1a+C[6]*z1a+C[7]);
+	    z2 = float(C[8]*x1a+C[9]*y1a+C[10]*z1a+C[11]);
 	  } else {
-	    x2 = x1;
-	    y2 = y1;
-	    z2 = z1;
+	    x2 = x1 * scalemm;
+	    y2 = y1 * scalemm;
+	    z2 = z1 * scalemm;
 	  }
 
     	  xyzp[0] = x2;
@@ -1035,7 +1072,7 @@ public:
     	}
       }
     }
-
+    
     return OCCAM_API_SUCCESS;
   }
 };

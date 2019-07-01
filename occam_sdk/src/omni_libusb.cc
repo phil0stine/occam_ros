@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -165,7 +165,7 @@ void OmniDevice::emitFrame(OccamImage* image_fr) {
   ++queued_frames_count;
   while (queued_frames_count > 10) {
 #ifdef DEBUG_SYNC
-    std::cerr<<"base driver drop frame"<<std::endl;
+    //    std::cerr<<"base driver drop frame"<<std::endl;
 #endif // DEBUG_SYNC
     --queued_frames_count;
     assert(!queued_frames.empty());
@@ -401,12 +401,25 @@ OmniDevice::OmniDevice(const std::string& cid,
 }
 
 OmniDevice::~OmniDevice() {
-  std::list<std::shared_ptr<USBBuffer> > term_buffers;
-  for (auto it=buffers.begin();it!=buffers.end();++it)
-    (*it)->cancel();
+#ifdef HAVE_CYUSB
+  USBDevice->EndPointOf(0x81)->Abort();
+  while (!buffers.empty()) {
+    auto b = *buffers.begin();
+    if (!b->isPending())
+      buffers.erase(buffers.begin());
+  }
+#endif // HAVE_CYUSB
+  
+  if (handle) {
+    std::list<std::shared_ptr<USBBuffer> > term_buffers;
+    for (auto it=buffers.begin();it!=buffers.end();++it)
+      (*it)->cancel();
+  }
 
   for (OccamImage* img : queued_frames)
     occamFreeImage(img);
+  if (image_fr)
+    occamFreeImage(image_fr);
 
 #ifdef HAVE_CYUSB
   if (USBDevice) {

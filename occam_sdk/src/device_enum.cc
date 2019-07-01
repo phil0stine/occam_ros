@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -33,10 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <algorithm>
 #include <string.h>
 #include <libusb.h>
-#ifdef HAVE_LIBUSBK
-#include <libusbk.h>
-#endif // HAVE_LIBUSBK
-#define __USB200_H__
+ //#define __USB200_H__
 #ifdef HAVE_CYUSB
 #include <CyAPI.h>
 #endif // HAVE_CYUSB

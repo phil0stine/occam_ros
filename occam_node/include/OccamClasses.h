@@ -211,7 +211,6 @@ public:
     info.height = height;
     info.width = width;
     info.distortion_model = "plumb_bob";
-    std::vector<double> ASDF;
     for (int i=0; i < D.size(); ++i)
       info.D[i] = D[i];
     for (int i=0; i < K.size(); ++i)
@@ -255,14 +254,15 @@ public:
 
 // _________________________________________________
 // POINTCLOUD PUBLISHER CLASS
-
 class PointCloudPublisher : public Publisher {
   OccamDataName req;
   ros::Publisher pub;
+  unsigned seq;
 public:
   PointCloudPublisher(OccamDataName _req, ros::NodeHandle nh)
     : Publisher(_req),
-      req(_req) {
+      req(_req),
+      seq(0) {
 
     std::string req_name = dataNameString(req);
     ROS_INFO("advertising %s",req_name.c_str());
@@ -281,34 +281,73 @@ public:
     ROS_INFO_THROTTLE(1,"sending data %s...",dataNameString(req).c_str());
 
     ros::Time stamp;
-    stamp.fromNSec(pc0->time_ns);
+    stamp.fromNSec(img0->time_ns);
 
-    sensor_msgs::PointCloud2 pc1;
+    sensor_msgs::PointCloud2 pc2;
+    pc2.header.seq = seq++;
+    pc2.header.frame_id = "occam";
+    pc2.header.stamp = stamp;
+
+    pc2.height = 1;
+    pc2.width = pc0->point_count;
+
+    unsigned point_step = 0;
+
+    sensor_msgs::PointField& fx = *pc2.fields.insert(pc2.fields.end(), sensor_msgs::PointField());
+    fx.name = "x";
+    fx.offset = point_step;
+    point_step += sizeof(float);
+    fx.datatype = sensor_msgs::PointField::FLOAT32;
+    fx.count = 1;
+
+    sensor_msgs::PointField& fy = *pc2.fields.insert(pc2.fields.end(), sensor_msgs::PointField());
+    fy.name = "y";
+    fy.offset = point_step;
+    point_step += sizeof(float);
+    fy.datatype = sensor_msgs::PointField::FLOAT32;
+    fy.count = 1;
+
+    sensor_msgs::PointField& fz = *pc2.fields.insert(pc2.fields.end(), sensor_msgs::PointField());
+    fz.name = "z";
+    fz.offset = point_step;
+    point_step += sizeof(float);
+    fz.datatype = sensor_msgs::PointField::FLOAT32;
+    fz.count = 1;
+
     if (pc0->rgb) {
-      pcl::PointCloud<pcl::PointXYZ> cloud;
-      for (int j=0, k=0; j<pc0->point_count; ++j, k+=3) {
-        pcl::PointXYZ pt;
-        pt.x = pc0->xyz[k+0] / 1000.f;
-        pt.y = pc0->xyz[k+1] / 1000.f;
-        pt.z = pc0->xyz[k+2] / 1000.f;
-      }
-      pcl::toROSMsg(cloud, pc1);
-    }
-    else {
-      pcl::PointCloud<pcl::PointXYZRGB> cloud;
-      for (int j=0, k=0; j<pc0->point_count; ++j, k+=3) {
-        pcl::PointXYZRGB pt;
-        pt.x = pc0->xyz[k+0] / 1000.f;
-        pt.y = pc0->xyz[k+1] / 1000.f;
-        pt.z = pc0->xyz[k+2] / 1000.f;
-        pt.r = pc0->rgb[k+0];
-        pt.g = pc0->rgb[k+1];
-        pt.b = pc0->rgb[k+2];
-      }
-      pcl::toROSMsg(cloud, pc1);
+      sensor_msgs::PointField& frgb = *pc2.fields.insert(pc2.fields.end(), sensor_msgs::PointField());
+      frgb.name = "rgb";
+      frgb.offset = point_step;
+      point_step += sizeof(float);
+      frgb.datatype = sensor_msgs::PointField::FLOAT32;
+      frgb.count = 1;
     }
 
-    pub.publish(pc1);
+    pc2.is_bigendian = false;
+    pc2.point_step = point_step;
+    pc2.row_step = point_step * pc0->point_count;
+    pc2.is_dense = true;
+
+    for (int j=0,k=0;j<pc0->point_count;++j,k+=3) {
+      float x = pc0->xyz[k+0] / 1000.f;
+      float y = pc0->xyz[k+1] / 1000.f;
+      float z = pc0->xyz[k+2] / 1000.f;
+
+      pc2.data.insert(pc2.data.end(), (uint8_t*)&x,(uint8_t*)&x + sizeof(x));
+      pc2.data.insert(pc2.data.end(), (uint8_t*)&y,(uint8_t*)&y + sizeof(y));
+      pc2.data.insert(pc2.data.end(), (uint8_t*)&z,(uint8_t*)&z + sizeof(z));
+
+      if (pc0->rgb) {
+     	uint8_t r = pc0->rgb[k+0];
+     	uint8_t g = pc0->rgb[k+1];
+     	uint8_t b = pc0->rgb[k+2];
+	uint32_t rgb = (uint32_t(r)<<16) | (uint32_t(g)<<8) | uint32_t(b);
+	float rgbf = *(float*)&rgb;
+	pc2.data.insert(pc2.data.end(), (uint8_t*)&rgbf,(uint8_t*)&rgbf + sizeof(rgbf));
+      }
+    }
+
+    pub.publish(pc2);
 
     occamFreePointCloud(pc0);
   }
@@ -540,39 +579,60 @@ public:
 
   std::string cid;
   OccamDevice* device;
-  std::vector<std::shared_ptr<Publisher> > pubs;
+  std::vector<std::shared_ptr<Publisher> > data_pubs;
   std::shared_ptr<OccamConfig> config;
+  std::vector<ros::Publisher> camera_info_pubs;
 
   // ___________________
   // standard constructor
 
-  OccamNode() : nh("~"), device(0) {
+  OccamNode() :
+    nh("~"), device(0) {
 
-        if(!initDevice())
-            return;
+    int r;
 
-        image_transport::ImageTransport it(nh);
+    OccamDeviceList* device_list;
+    OCCAM_CHECK(occamEnumerateDeviceList(2000, &device_list));
+    ROS_INFO("%i devices found", device_list->entry_count);
+    int dev_index = 0;
+    for (int i=0;i<device_list->entry_count;++i) {
+      if (!cid.empty() && device_list->entries[i].cid == cid) {
+	dev_index = i;
+      }
+      ROS_INFO("device[%i]: cid = %s",i,device_list->entries[i].cid);
+    }
+    if (dev_index<0 || dev_index >= device_list->entry_count)
+      return;
+    if (!cid.empty() && device_list->entries[dev_index].cid != cid) {
+      ROS_INFO("Requested cid %s not found",cid.c_str());
+      return;
+    }
 
-        int req_count;
-        OccamDataName* req;
-        OccamDataType* types;
-        OCCAM_CHECK(occamDeviceAvailableData(device, &req_count, &req, &types));
+    OCCAM_CHECK(occamOpenDevice(device_list->entries[dev_index].cid, &device));
+    OCCAM_CHECK(occamFreeDeviceList(device_list));
 
-        // setup all publishers
-        for (int j=0;j<req_count;++j) {
-            if (types[j] == OCCAM_IMAGE)
-                pubs.push_back(std::make_shared<ImagePublisher>(req[j],it));
-            else if (types[j] == OCCAM_POINT_CLOUD)
-                pubs.push_back(std::make_shared<PointCloudPublisher>(req[j],nh));
-        }
+    int is_color = 0;
+    OCCAM_CHECK(occamGetDeviceValuei(device, OCCAM_COLOR, &is_color));
 
-        occamFree(req);
-        occamFree(types);
+    image_transport::ImageTransport it(nh);
 
-        // setup dynamic configuration
-        config = std::make_shared<OccamConfig>(nh,cid,device);
+    int req_count;
+    OccamDataName* req;
+    OccamDataType* types;
+    OCCAM_CHECK(occamDeviceAvailableData(device, &req_count, &req, &types));
+    for (int j=0;j<req_count;++j) {
+      if (types[j] == OCCAM_IMAGE)
+	data_pubs.push_back(std::make_shared<ImagePublisher>(req[j],it,is_color));
+      else if (types[j] == OCCAM_POINT_CLOUD)
+	data_pubs.push_back(std::make_shared<PointCloudPublisher>(req[j],nh));
+    }
+    occamFree(req);
+    occamFree(types);
+
+    config = std::make_shared<OccamConfig>(nh,cid,device);
+
+    publishCameraInfo(ros::Time::now());
   }
-
 
   // ___________________
   // special constructor

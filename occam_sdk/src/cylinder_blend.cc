@@ -1,5 +1,5 @@
 /*
-Copyright 2011 - 2015 Occam Robotics Inc - All rights reserved.
+Copyright 2011 - 2019 Occam Robotics Inc - All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "indigo.h"
 #include "module_utils.h"
 #include "remap.h"
+#include "math.h"
 #include <vector>
 #include <map>
 #include <functional>
@@ -36,11 +37,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <mutex>
 #include <iostream>
-#include <math.h>
+
 #undef min
 #undef max
-
-using namespace std;
 
 struct BlendRemapSensor {
   int width;
@@ -195,7 +194,7 @@ class BlendRemapper {
     miny = 0;
     maxy = 0;
     const double pi = 3.14159265358979323846;
-    for (double theta=0;theta<2*pi;theta+=pi/10) {
+    for (double theta=0;theta<2*pi;theta+=pi/1500) {
       double miny0 = findextent(false, theta);
       double maxy0 = findextent(true, theta);
       if (crop) {
@@ -448,7 +447,7 @@ public:
 
     using namespace std::placeholders;
     registerParami(OCCAM_STITCHING_RADIUS,
-		   "stitching_radius", OCCAM_SETTINGS, 250000, 10000000,
+		   "stitching_radius", OCCAM_SETTINGS, 1700000, 10000000,
 		   std::bind(&OccamCylinderBlendFilterImpl::get_stitching_radius,this),
 		   std::bind(&OccamCylinderBlendFilterImpl::set_stitching_radius,this,_1));
     registerParami(OCCAM_STITCHING_ROTATION,
