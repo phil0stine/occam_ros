@@ -27,6 +27,9 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(PC_LIBUSB libusb-1.0)
 link_directories(${PC_LIBUSB_LIBDIR})
 
+find_package(PCL REQUIRED)
+add_definitions(${PCL_DEFINITIONS})
+
 catkin_package(
         INCLUDE_DIRS
         CATKIN_DEPENDS
@@ -51,6 +54,7 @@ include_directories(
         include
         ${catkin_INCLUDE_DIRS}
         ${PC_LIBUSB_INCLUDE_DIRS}
+        ${PCL_INCLUDE_DIRS}
 )
 
 # ___________ EXECUTABLES ______________
@@ -59,9 +63,9 @@ add_executable(ros_indigosdk_node
     nodes/ros_indigosdk_node.cpp
 )
 target_link_libraries(ros_indigosdk_node
-    ${catkin_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
 )
-
 
 add_executable(publishOccamDisparityData
     nodes/publishStitchandDisparity.cpp

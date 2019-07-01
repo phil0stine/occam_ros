@@ -33,6 +33,8 @@
 #include <dynamic_reconfigure/ConfigDescription.h>
 #include <dynamic_reconfigure/Reconfigure.h>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <pcl/point_types.h>
+#include <pcl_conversions/pcl_conversions.h>
 #include "indigo.h"
 //#include "/home/jonas/git/occam/occam_sdk/include/indigo.h"
 
@@ -264,7 +266,7 @@ public:
 
     std::string req_name = dataNameString(req);
     ROS_INFO("advertising %s",req_name.c_str());
-    pub = nh.advertise<sensor_msgs::PointCloud>(nh.resolveName(req_name), 1);
+    pub = nh.advertise<sensor_msgs::PointCloud2>(nh.resolveName(req_name), 1);
   }
   virtual bool isRequested() {
     if (pub.getNumSubscribers()>0)
@@ -281,29 +283,29 @@ public:
     ros::Time stamp;
     stamp.fromNSec(pc0->time_ns);
 
-    sensor_msgs::PointCloud pc1;
-    pc1.header.frame_id = "occam";
-    pc1.header.stamp = stamp;
-    pc1.points.resize(pc0->point_count);
-    for (int j=0,k=0;j<pc0->point_count;++j,k+=3) {
-      geometry_msgs::Point32& p1 = pc1.points[j];
-      p1.x = pc0->xyz[k+0] / 1000.f;
-      p1.y = pc0->xyz[k+1] / 1000.f;
-      p1.z = pc0->xyz[k+2] / 1000.f;
-    }
-
+    sensor_msgs::PointCloud2 pc1;
     if (pc0->rgb) {
-      sensor_msgs::ChannelFloat32& rgb_channel = *pc1.channels.emplace(pc1.channels.end());
-      rgb_channel.name = "rgb";
-      rgb_channel.values.resize(pc0->point_count);
-      for (int j=0,k=0;j<rgb_channel.values.size();++j,k+=3) {
-    float& rgbf = rgb_channel.values[j];
-    uint32_t& rgb = *(uint32_t*)&rgbf;
-    uint8_t r = pc0->rgb[k+0];
-    uint8_t g = pc0->rgb[k+1];
-    uint8_t b = pc0->rgb[k+2];
-    rgb = uint32_t(b)|(uint32_t(g)<<8)|(uint32_t(r)<<16);
+      pcl::PointCloud<pcl::PointXYZ> cloud;
+      for (int j=0, k=0; j<pc0->point_count; ++j, k+=3) {
+        pcl::PointXYZ pt;
+        pt.x = pc0->xyz[k+0] / 1000.f;
+        pt.y = pc0->xyz[k+1] / 1000.f;
+        pt.z = pc0->xyz[k+2] / 1000.f;
       }
+      pcl::toROSMsg(cloud, pc1);
+    }
+    else {
+      pcl::PointCloud<pcl::PointXYZRGB> cloud;
+      for (int j=0, k=0; j<pc0->point_count; ++j, k+=3) {
+        pcl::PointXYZRGB pt;
+        pt.x = pc0->xyz[k+0] / 1000.f;
+        pt.y = pc0->xyz[k+1] / 1000.f;
+        pt.z = pc0->xyz[k+2] / 1000.f;
+        pt.r = pc0->rgb[k+0];
+        pt.g = pc0->rgb[k+1];
+        pt.b = pc0->rgb[k+2];
+      }
+      pcl::toROSMsg(cloud, pc1);
     }
 
     pub.publish(pc1);
