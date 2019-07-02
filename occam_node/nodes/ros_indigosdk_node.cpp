@@ -131,7 +131,9 @@ public:
 };
 
 class ImagePublisher : public Publisher {
-  image_transport::CameraPublisher pub;
+  image_transport::Publisher pub;
+  ros::Publisher info_pub;
+  ros::NodeHandle nh;
   OccamDataName req;
   OccamDevice* device;
   bool is_color;
@@ -149,13 +151,23 @@ public:
     : Publisher(_req),
       req(_req),
       is_color(_is_color),
-      seq(0) {
+      seq(0),
+      sid(-1),
+      nh("~") {
 
     std::string req_name = dataNameString(req);
-    std::size_t image_in_pub = req_name.find("image");
-    sid = std::stoi(req_name.substr(image_in_pub + 5));
+    std::string rect_name = "rectified_image";
+    std::size_t image_in_pub = req_name.find(rect_name);
     ROS_INFO("advertising %s",req_name.c_str());
-    pub = it.advertiseCamera(req_name, 1);
+    pub = it.advertise(req_name, 1);
+    if (image_in_pub != std::string::npos) {
+      std::cout<<"image in pub"<<req_name<<std::endl;
+      sid = std::stoi(req_name.substr(image_in_pub + rect_name.size()));
+      std::stringstream sout;
+      sout<<"camera_info"<<sid;
+      std::cout<<"sout.str"<<sout.str()<<std::endl;
+      info_pub = nh.advertise<sensor_msgs::CameraInfo>(sout.str(), 1, true);
+    }
     K[0] = 0.0;
     device = dev;
   }
@@ -168,13 +180,13 @@ public:
     occamGetDeviceValuei(device, OCCAM_BINNING_MODE, &binning_mode);
 
     OCCAM_CHECK(occamGetDeviceValuerv
-                (device, OccamParam(OCCAM_SENSOR_DISTORTION_COEFS0+seq), D, 5));
+                (device, OccamParam(OCCAM_SENSOR_DISTORTION_COEFS0+sid), D, 5));
     OCCAM_CHECK(occamGetDeviceValuerv
-                (device, OccamParam(OCCAM_SENSOR_INTRINSICS0+seq), K, 9));
+                (device, OccamParam(OCCAM_SENSOR_INTRINSICS0+sid), K, 9));
     OCCAM_CHECK(occamGetDeviceValuerv
-                (device, OccamParam(OCCAM_SENSOR_ROTATION0+seq), R, 9));
+                (device, OccamParam(OCCAM_SENSOR_ROTATION0+sid), R, 9));
     OCCAM_CHECK(occamGetDeviceValuerv
-                (device, OccamParam(OCCAM_SENSOR_TRANSLATION0+seq), T, 3));
+                (device, OccamParam(OCCAM_SENSOR_TRANSLATION0+sid), T, 3));
 
     ci.header = img.header;
     ci.height = img.height;
@@ -266,7 +278,8 @@ public:
     }
 
     ros::Time stamp;
-    stamp.fromNSec(img0->time_ns);
+    //    stamp.fromNSec(img0->time_ns);
+    stamp = ros::Time::now();
 
     int width = img0->width;
     int height = img0->height;
@@ -288,9 +301,12 @@ public:
     for (int j=0;j<height;++j,dstp+=dst_step,srcp+=src_step)
       memcpy(dstp,srcp,width*bpp);
 
-    sensor_msgs::CameraInfo info1 = getInfoMsg(img1);
-    pub.publish(img1, info1);
+    pub.publish(img1);
 
+    if (sid >= 0) {
+      sensor_msgs::CameraInfo info1 = getInfoMsg(img1);
+      info_pub.publish(info1);
+    }
     occamFreeImage(img0);
   }
 };
@@ -322,7 +338,8 @@ public:
     ROS_INFO_THROTTLE(1,"sending data %s...",dataNameString(req).c_str());
 
     ros::Time stamp;
-    stamp.fromNSec(pc0->time_ns);
+    //    stamp.fromNSec(pc0->time_ns);
+    stamp = ros::Time::now();
 
     sensor_msgs::PointCloud2 pc2;
     pc2.header.seq = seq++;
@@ -664,7 +681,7 @@ public:
 
     config = std::make_shared<OccamConfig>(nh,cid,device);
 
-    publishCameraInfo(ros::Time::now());
+    //    publishCameraInfo(ros::Time::now());
   }
 
   virtual ~OccamNode() {
