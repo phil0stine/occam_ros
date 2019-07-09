@@ -135,6 +135,7 @@ class ImagePublisher : public Publisher {
   OccamDataName req;
   OccamDevice* device;
   bool is_color;
+  bool relative_stamp;
   std::atomic<int> subscribers;
   unsigned seq;
   int sid;
@@ -145,7 +146,7 @@ public:
   std::array<double, 3> T;
 
   ImagePublisher(OccamDataName _req, image_transport::ImageTransport it, bool _is_color,
-                 OccamDevice* dev)
+                 OccamDevice* dev, ros::NodeHandle nh)
     : Publisher(_req),
       req(_req),
       is_color(_is_color),
@@ -154,6 +155,7 @@ public:
     std::string req_name = dataNameString(req);
     std::size_t image_in_pub = req_name.find("image");
     sid = std::stoi(req_name.substr(image_in_pub + 5));
+    relative_stamp = nh.param("relative_stamp", relative_stamp, false);
     ROS_INFO("advertising %s",req_name.c_str());
     pub = it.advertiseCamera(req_name, 1);
     K[0] = 0.0;
@@ -266,7 +268,8 @@ public:
     }
 
     ros::Time stamp;
-    stamp.fromNSec(img0->time_ns);
+    if (relative_stamp) stamp.fromNSec(img0->time_ns);
+    else stamp = ros::Time::now();
 
     int width = img0->width;
     int height = img0->height;
@@ -298,6 +301,7 @@ public:
 class PointCloudPublisher : public Publisher {
   OccamDataName req;
   ros::Publisher pub;
+  bool relative_stamp;
   unsigned seq;
 public:
   PointCloudPublisher(OccamDataName _req, ros::NodeHandle nh)
@@ -308,6 +312,7 @@ public:
     std::string req_name = dataNameString(req);
     ROS_INFO("advertising %s",req_name.c_str());
     pub = nh.advertise<sensor_msgs::PointCloud2>(nh.resolveName(req_name), 1);
+    relative_stamp = nh.param("relative_stamp", relative_stamp, false);
   }
   virtual bool isRequested() {
     if (pub.getNumSubscribers()>0)
@@ -322,7 +327,8 @@ public:
     ROS_INFO_THROTTLE(1,"sending data %s...",dataNameString(req).c_str());
 
     ros::Time stamp;
-    stamp.fromNSec(pc0->time_ns);
+    if (relative_stamp) stamp.fromNSec(pc0->time_ns);
+    else stamp = ros::Time::now();
 
     sensor_msgs::PointCloud2 pc2;
     pc2.header.seq = seq++;
@@ -333,7 +339,7 @@ public:
     pc2.width = pc0->point_count;
 
     unsigned point_step = 0;
-    
+
     sensor_msgs::PointField& fx = *pc2.fields.insert(pc2.fields.end(), sensor_msgs::PointField());
     fx.name = "x";
     fx.offset = point_step;
@@ -655,7 +661,7 @@ public:
     OCCAM_CHECK(occamDeviceAvailableData(device, &req_count, &req, &types));
     for (int j=0;j<req_count;++j) {
       if (types[j] == OCCAM_IMAGE)
-	data_pubs.push_back(std::make_shared<ImagePublisher>(req[j],it,is_color,device));
+	data_pubs.push_back(std::make_shared<ImagePublisher>(req[j],it,is_color,device,nh));
       else if (types[j] == OCCAM_POINT_CLOUD)
 	data_pubs.push_back(std::make_shared<PointCloudPublisher>(req[j],nh));
     }
