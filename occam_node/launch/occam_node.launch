@@ -1,0 +1,6 @@
+<launch>
+  <arg name="relative_stamp" default="false" doc="publish msg headers to be relative to camera powerup time?"/>
+  <node pkg="occam_node" type="ros_indigosdk_node" name="occam_driver" output="screen">
+    <param name="relative_stamp" value="$(arg relative_stamp)"/>
+  </node>
+</launch>

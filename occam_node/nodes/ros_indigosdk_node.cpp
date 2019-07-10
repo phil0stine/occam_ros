@@ -218,18 +218,32 @@ public:
     ci.R[7] = 0;
     ci.R[8] = 1;
 
-    ci.P[0] = R[0];
-    ci.P[1] = R[1];
-    ci.P[2] = R[2];
-    ci.P[3] = T[0];
-    ci.P[4] = R[3];
-    ci.P[5] = R[4];
-    ci.P[6] = R[5];
-    ci.P[7] = T[1];
-    ci.P[8] = R[6];
-    ci.P[9] = R[7];
-    ci.P[10] = R[8];
-    ci.P[11] = T[2];
+    // SDK does not provide this information, so for now, have to assume it's K
+    ci.P[0] = K[0];
+    ci.P[1] = K[1];
+    ci.P[2] = K[2];
+    ci.P[3] = 0;
+    ci.P[4] = K[3];
+    ci.P[5] = K[4];
+    ci.P[6] = K[5];
+    ci.P[7] = 0;
+    ci.P[8] = K[6];
+    ci.P[9] = K[7];
+    ci.P[10] = K[8];
+    ci.P[11] = 0;
+
+    // ci.P[0] = R[0];
+    // ci.P[1] = R[1];
+    // ci.P[2] = R[2];
+    // ci.P[3] = 0.001 * T[0];
+    // ci.P[4] = R[3];
+    // ci.P[5] = R[4];
+    // ci.P[6] = R[5];
+    // ci.P[7] = 0.001 * T[1];
+    // ci.P[8] = R[6];
+    // ci.P[9] = R[7];
+    // ci.P[10] = R[8];
+    // ci.P[11] = 0.001 * T[2];
 
     if (binning_mode == OCCAM_BINNING_2x2) {
       ci.binning_x = 2;
@@ -259,8 +273,6 @@ public:
     OccamImage* img0 = (OccamImage*)data;
     if (!img0)
       return;
-
-    ROS_INFO_THROTTLE(1,"sending data %s...",dataNameString(req).c_str());
 
     const char* image_encoding = 0;
     int bpp = 1;
