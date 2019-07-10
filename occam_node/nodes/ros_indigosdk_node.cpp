@@ -220,35 +220,35 @@ public:
     ci.R[8] = 1;
 
     // SDK does not provide this information, so for now, have to assume it's K*[R|t]
-    cv::Mat k_mat(3, 3, CV_64F, K);
-    cv::Mat r_mat(3, 3, CV_64F, R);
-    cv::Mat rt_mat(3, 4, CV_64F);
-    cv::Mat r_block(rt_mat(cv::Rect(0,0,3,3)));
-    r_mat.copyTo(r_block);
-    cv::Mat p_mat = k_mat * rt_mat;
-    p_mat.at<double>(0,3) = 0.001 * T[0];
-    p_mat.at<double>(1,3) = 0.001 * T[1];
-    p_mat.at<double>(2,3) = 0.001 * T[2];
-    for (int i=0; i < 12; ++i) {
-      ci.P[i] = p_mat.data[i];
-    }
+    // cv::Mat k_mat(3, 3, CV_64F, K);
+    // cv::Mat r_mat(3, 3, CV_64F, R);
+    // cv::Mat rt_mat(3, 4, CV_64F);
+    // cv::Mat r_block(rt_mat(cv::Rect(0,0,3,3)));
+    // r_mat.copyTo(r_block);
+    // cv::Mat p_mat = k_mat * rt_mat;
+    // p_mat.at<double>(0,3) = 0.001 * T[0];
+    // p_mat.at<double>(1,3) = 0.001 * T[1];
+    // p_mat.at<double>(2,3) = 0.001 * T[2];
+    // for (int i=0; i < 12; ++i) {
+    //   ci.P[i] = p_mat.data[i];
+    // }
     // std::cout<<"K"<<k_mat<<std::endl;
     // std::cout<<"R"<<r_mat<<std::endl;
     // std::cout<<"T"<<T[0]<<" "<<T[1]<<" "<<T<<std::endl;
     // std::cout<<"P"<<p_mat<<std::endl;
 
-    // ci.P[0] = R[0];
-    // ci.P[1] = R[1];
-    // ci.P[2] = R[2];
-    // ci.P[3] = 0.001 * T[0];
-    // ci.P[4] = R[3];
-    // ci.P[5] = R[4];
-    // ci.P[6] = R[5];
-    // ci.P[7] = 0.001 * T[1];
-    // ci.P[8] = R[6];
-    // ci.P[9] = R[7];
-    // ci.P[10] = R[8];
-    // ci.P[11] = 0.001 * T[2];
+    ci.P[0] = K[0];
+    ci.P[1] = K[1];
+    ci.P[2] = K[2];
+    ci.P[3] = 0;
+    ci.P[4] = K[3];
+    ci.P[5] = K[4];
+    ci.P[6] = K[5];
+    ci.P[7] = 0;
+    ci.P[8] = K[6];
+    ci.P[9] = K[7];
+    ci.P[10] = K[8];
+    ci.P[11] = 0;
 
     if (binning_mode == OCCAM_BINNING_2x2) {
       ci.binning_x = 2;

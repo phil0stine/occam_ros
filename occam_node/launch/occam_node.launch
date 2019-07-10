@@ -1,6 +1,13 @@
 <launch>
   <arg name="relative_stamp" default="false" doc="publish msg headers to be relative to camera powerup time?"/>
-  <node pkg="occam_node" type="ros_indigosdk_node" name="occam_driver" output="screen">
-    <param name="relative_stamp" value="$(arg relative_stamp)"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find occam_node)/urdf/occam_stereo.urdf.xacro'"/>
+
+  <node pkg="robot_state_publisher" type="state_publisher" name="occam_state_publisher">
+    <!-- <remap from="robot_description" to="occam_description"/> -->
+  </node>
+
+  <node pkg="occam_node" type="ros_indigosdk_node" name="occam" output="screen">
+    <!-- <param name="relative_stamp" value="$(arg relative_stamp)"/> -->
   </node>
 </launch>
