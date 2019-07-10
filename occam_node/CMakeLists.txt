@@ -19,6 +19,8 @@ pkg_check_modules(PC_LIBUSB libusb-1.0)
 include_directories(${PC_LIBUSB_INCLUDE_DIRS})
 link_directories(${PC_LIBUSB_LIBDIR})
 
+find_package(OpenCV REQUIRED)
+
 catkin_package(
 	INCLUDE_DIRS
 	CATKIN_DEPENDS
@@ -37,7 +39,7 @@ include_directories(
 )
 
 add_executable(ros_indigosdk_node nodes/ros_indigosdk_node.cpp)
-target_link_libraries(ros_indigosdk_node ${catkin_LIBRARIES})
+target_link_libraries(ros_indigosdk_node ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 add_executable(rectify nodes/rectify.cpp)
 target_link_libraries(rectify ${catkin_LIBRARIES})
