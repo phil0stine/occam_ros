@@ -32,85 +32,64 @@ static void reportError(int error_code) {
 
 static std::string dataNameString(OccamDataName data_name) {
   switch (data_name) {
-  case OCCAM_IMAGE0: return "image0";
-  case OCCAM_IMAGE1: return "image1";
-  case OCCAM_IMAGE2: return "image2";
-  case OCCAM_IMAGE3: return "image3";
-  case OCCAM_IMAGE4: return "image4";
-  case OCCAM_IMAGE5: return "image5";
-  case OCCAM_IMAGE6: return "image6";
-  case OCCAM_IMAGE7: return "image7";
-  case OCCAM_IMAGE8: return "image8";
-  case OCCAM_IMAGE9: return "image9";
-  case OCCAM_IMAGE10: return "image10";
-  case OCCAM_IMAGE11: return "image11";
-  case OCCAM_IMAGE12: return "image12";
-  case OCCAM_IMAGE13: return "image13";
-  case OCCAM_IMAGE14: return "image14";
-  case OCCAM_RAW_IMAGE0: return "raw_image0";
-  case OCCAM_RAW_IMAGE1: return "raw_image1";
-  case OCCAM_RAW_IMAGE2: return "raw_image2";
-  case OCCAM_RAW_IMAGE3: return "raw_image3";
-  case OCCAM_RAW_IMAGE4: return "raw_image4";
-  case OCCAM_RAW_IMAGE5: return "raw_image5";
-  case OCCAM_RAW_IMAGE6: return "raw_image6";
-  case OCCAM_RAW_IMAGE7: return "raw_image7";
-  case OCCAM_RAW_IMAGE8: return "raw_image8";
-  case OCCAM_RAW_IMAGE9: return "raw_image9";
-  case OCCAM_RAW_IMAGE10: return "raw_image10";
-  case OCCAM_RAW_IMAGE11: return "raw_image11";
-  case OCCAM_RAW_IMAGE12: return "raw_image12";
-  case OCCAM_RAW_IMAGE13: return "raw_image13";
-  case OCCAM_RAW_IMAGE14: return "raw_image14";
-  case OCCAM_IMAGE_TILES0: return "image_tiles0";
-  case OCCAM_IMAGE_TILES1: return "image_tiles1";
-  case OCCAM_IMAGE_TILES2: return "image_tiles2";
-  case OCCAM_RAW_IMAGE_TILES0: return "raw_image_tiles0";
-  case OCCAM_RAW_IMAGE_TILES1: return "raw_image_tiles1";
-  case OCCAM_RAW_IMAGE_TILES2: return "raw_image_tiles2";
-  case OCCAM_UNDISTORTED_IMAGE_TILES0: return "undistorted_image_tiles0";
-  case OCCAM_UNDISTORTED_IMAGE_TILES1: return "undistorted_image_tiles1";
-  case OCCAM_UNDISTORTED_IMAGE_TILES2: return "undistorted_image_tiles2";
-  case OCCAM_UNDISTORTED_IMAGE0: return "undistorted_image0";
-  case OCCAM_UNDISTORTED_IMAGE1: return "undistorted_image1";
-  case OCCAM_UNDISTORTED_IMAGE2: return "undistorted_image2";
-  case OCCAM_UNDISTORTED_IMAGE3: return "undistorted_image3";
-  case OCCAM_UNDISTORTED_IMAGE4: return "undistorted_image4";
-  case OCCAM_UNDISTORTED_IMAGE5: return "undistorted_image5";
-  case OCCAM_UNDISTORTED_IMAGE6: return "undistorted_image6";
-  case OCCAM_UNDISTORTED_IMAGE7: return "undistorted_image7";
-  case OCCAM_UNDISTORTED_IMAGE8: return "undistorted_image8";
-  case OCCAM_UNDISTORTED_IMAGE9: return "undistorted_image9";
-  case OCCAM_UNDISTORTED_IMAGE10: return "undistorted_image10";
-  case OCCAM_UNDISTORTED_IMAGE11: return "undistorted_image11";
-  case OCCAM_UNDISTORTED_IMAGE12: return "undistorted_image12";
-  case OCCAM_UNDISTORTED_IMAGE13: return "undistorted_image13";
-  case OCCAM_UNDISTORTED_IMAGE14: return "undistorted_image14";
-  case OCCAM_STITCHED_IMAGE0: return "stitched_image0";
-  case OCCAM_STITCHED_IMAGE1: return "stitched_image1";
-  case OCCAM_STITCHED_IMAGE2: return "stitched_image2";
-  case OCCAM_RECTIFIED_IMAGE0: return "rectified_image0";
-  case OCCAM_RECTIFIED_IMAGE1: return "rectified_image1";
-  case OCCAM_RECTIFIED_IMAGE2: return "rectified_image2";
-  case OCCAM_RECTIFIED_IMAGE3: return "rectified_image3";
-  case OCCAM_RECTIFIED_IMAGE4: return "rectified_image4";
-  case OCCAM_RECTIFIED_IMAGE5: return "rectified_image5";
-  case OCCAM_RECTIFIED_IMAGE6: return "rectified_image6";
-  case OCCAM_RECTIFIED_IMAGE7: return "rectified_image7";
-  case OCCAM_RECTIFIED_IMAGE8: return "rectified_image8";
-  case OCCAM_RECTIFIED_IMAGE9: return "rectified_image9";
-  case OCCAM_DISPARITY_IMAGE0: return "disparity_image0";
-  case OCCAM_DISPARITY_IMAGE1: return "disparity_image1";
-  case OCCAM_DISPARITY_IMAGE2: return "disparity_image2";
-  case OCCAM_DISPARITY_IMAGE3: return "disparity_image3";
-  case OCCAM_DISPARITY_IMAGE4: return "disparity_image4";
+  case OCCAM_IMAGE0: return "camera0/image";
+  case OCCAM_IMAGE1: return "camera1/image";
+  case OCCAM_IMAGE2: return "camera2/image";
+  case OCCAM_IMAGE3: return "camera3/image";
+  case OCCAM_IMAGE4: return "camera4/image";
+  case OCCAM_IMAGE5: return "camera5/image";
+  case OCCAM_IMAGE6: return "camera6/image";
+  case OCCAM_IMAGE7: return "camera7/image";
+  case OCCAM_IMAGE8: return "camera8/image";
+  case OCCAM_IMAGE9: return "camera9/image";
+  case OCCAM_RAW_IMAGE0: return "camera0/image_raw";
+  case OCCAM_RAW_IMAGE1: return "camera1/image_raw";
+  case OCCAM_RAW_IMAGE2: return "camera2/image_raw";
+  case OCCAM_RAW_IMAGE3: return "camera3/image_raw";
+  case OCCAM_RAW_IMAGE4: return "camera4/image_raw";
+  case OCCAM_RAW_IMAGE5: return "camera5/image_raw";
+  case OCCAM_RAW_IMAGE6: return "camera6/image_raw";
+  case OCCAM_RAW_IMAGE7: return "camera7/image_raw";
+  case OCCAM_RAW_IMAGE8: return "camera8/image_raw";
+  case OCCAM_RAW_IMAGE9: return "camera9/image_raw";
+  case OCCAM_IMAGE_TILES0: return "image_tiles";
+  case OCCAM_IMAGE_TILES1: return "image_tiles_with_disparity";
+  case OCCAM_RAW_IMAGE_TILES0: return "raw_image_tiles";
+  case OCCAM_UNDISTORTED_IMAGE_TILES0: return "undistorted_image_tiles";
+  case OCCAM_UNDISTORTED_IMAGE0: return "camera0/undistorted_image";
+  case OCCAM_UNDISTORTED_IMAGE1: return "camera1/undistorted_image";
+  case OCCAM_UNDISTORTED_IMAGE2: return "camera2/undistorted_image";
+  case OCCAM_UNDISTORTED_IMAGE3: return "camera3/undistorted_image";
+  case OCCAM_UNDISTORTED_IMAGE4: return "camera4/undistorted_image";
+  case OCCAM_UNDISTORTED_IMAGE5: return "camera5/undistorted_image";
+  case OCCAM_UNDISTORTED_IMAGE6: return "camera6/undistorted_image";
+  case OCCAM_UNDISTORTED_IMAGE7: return "camera7/undistorted_image";
+  case OCCAM_UNDISTORTED_IMAGE8: return "camera8/undistorted_image";
+  case OCCAM_UNDISTORTED_IMAGE9: return "camera9/undistorted_image";
+  case OCCAM_STITCHED_IMAGE0: return "stitched_image";
+  case OCCAM_STITCHED_IMAGE1: return "stitched_image_with_disparity";
+  case OCCAM_RECTIFIED_IMAGE0: return "camera0/image_rect";
+  case OCCAM_RECTIFIED_IMAGE1: return "camera1/image_rect";
+  case OCCAM_RECTIFIED_IMAGE2: return "camera2/image_rect";
+  case OCCAM_RECTIFIED_IMAGE3: return "camera3/image_rect";
+  case OCCAM_RECTIFIED_IMAGE4: return "camera4/image_rect";
+  case OCCAM_RECTIFIED_IMAGE5: return "camera5/image_rect";
+  case OCCAM_RECTIFIED_IMAGE6: return "camera6/image_rect";
+  case OCCAM_RECTIFIED_IMAGE7: return "camera7/image_rect";
+  case OCCAM_RECTIFIED_IMAGE8: return "camera8/image_rect";
+  case OCCAM_RECTIFIED_IMAGE9: return "camera9/image_rect";
+  case OCCAM_DISPARITY_IMAGE0: return "camera0/disparity_image";
+  case OCCAM_DISPARITY_IMAGE1: return "camera2/disparity_image";
+  case OCCAM_DISPARITY_IMAGE2: return "camera4/disparity_image";
+  case OCCAM_DISPARITY_IMAGE3: return "camera6/disparity_image";
+  case OCCAM_DISPARITY_IMAGE4: return "camera8/disparity_image";
   case OCCAM_TILED_DISPARITY_IMAGE: return "tiled_disparity_image";
   case OCCAM_STITCHED_DISPARITY_IMAGE: return "stitched_disparity_image";
-  case OCCAM_POINT_CLOUD0: return "point_cloud0";
-  case OCCAM_POINT_CLOUD1: return "point_cloud1";
-  case OCCAM_POINT_CLOUD2: return "point_cloud2";
-  case OCCAM_POINT_CLOUD3: return "point_cloud3";
-  case OCCAM_POINT_CLOUD4: return "point_cloud4";
+  case OCCAM_POINT_CLOUD0: return "camera0/point_cloud";
+  case OCCAM_POINT_CLOUD1: return "camera2/point_cloud";
+  case OCCAM_POINT_CLOUD2: return "camera4/point_cloud";
+  case OCCAM_POINT_CLOUD3: return "camera6/point_cloud";
+  case OCCAM_POINT_CLOUD4: return "camera8/point_cloud";
   case OCCAM_STITCHED_POINT_CLOUD: return "stitched_point_cloud";
   }
   return std::string();
@@ -158,16 +137,16 @@ public:
       nh("~") {
 
     std::string req_name = dataNameString(req);
-    std::string rect_name = "rectified_image";
+    std::string rect_name = "/image_rect";
     std::size_t image_in_pub = req_name.find(rect_name);
     relative_stamp = nh.param("relative_stamp", relative_stamp, false);
     ROS_INFO("advertising %s",req_name.c_str());
     pub = it.advertise(req_name, 1);
     if (image_in_pub != std::string::npos) {
-      std::cout<<"image in pub"<<req_name<<std::endl;
-      sid = std::stoi(req_name.substr(image_in_pub + rect_name.size()));
+      std::cout<<req_name.substr(image_in_pub-2, 1)<<std::endl;
+      sid = std::stoi(req_name.substr(image_in_pub-1, 1));
       std::stringstream sout;
-      sout<<"camera_info"<<sid;
+      sout<<req_name.substr(0, image_in_pub)<<"/camera_info";
       std::cout<<"sout.str"<<sout.str()<<std::endl;
       info_pub = nh.advertise<sensor_msgs::CameraInfo>(sout.str(), 1, true);
     }
@@ -300,25 +279,39 @@ public:
     if (relative_stamp) stamp.fromNSec(img0->time_ns);
     else stamp = ros::Time::now();
 
-    int width = img0->width;
-    int height = img0->height;
+    // Rect images are transposed for stereo proc. Undo transpose for msg
+    int msg_width = sid < 0 ? img0->width : img0->height;
+    int msg_height = sid < 0 ? img0->height : img0->width;;
 
     sensor_msgs::Image img1;
     img1.header.seq = seq++;
     img1.header.frame_id = "occam";
     img1.header.stamp = stamp;
     img1.encoding = image_encoding;
-    img1.height = height;
-    img1.width = width;
-    img1.step = width*bpp;
+    img1.height = msg_height;
+    img1.width = msg_width;
+    img1.step = msg_width*bpp;
     img1.data.resize(img1.height*img1.step);
     img1.is_bigendian = 0;
     const uint8_t* srcp = img0->data[0];
     int src_step = img0->step[0];
     uint8_t* dstp = &img1.data[0];
     int dst_step = img1.step;
-    for (int j=0;j<height;++j,dstp+=dst_step,srcp+=src_step)
-      memcpy(dstp,srcp,width*bpp);
+    if (sid >= 0) {
+      for (int i=0; i<img0->width; ++i) {
+        srcp=img0->data[0]+i*bpp;
+        for (int j=0; j<img0->height; ++j) {
+          memcpy(dstp,srcp,bpp);
+          dstp+=bpp;
+          srcp+=src_step;
+        }
+      }
+    }
+    else {
+      for (int j=0;j<img0->height;++j,dstp+=dst_step,srcp+=src_step) {
+        memcpy(dstp,srcp,img0->width*bpp);
+      }
+    }
 
     pub.publish(img1);
 
@@ -462,7 +455,7 @@ class OccamConfig {
       base_name = name;
       module_index = 0;
     }
-    
+
     for (int j=0;j<param_list->param_count;++j) {
       if (param_list->params[j].read_only)
 	continue;
@@ -476,7 +469,7 @@ class OccamConfig {
     return OccamParam(-1);
   }
 
-  bool setConfigCallback(dynamic_reconfigure::Reconfigure::Request& req, 
+  bool setConfigCallback(dynamic_reconfigure::Reconfigure::Request& req,
 			 dynamic_reconfigure::Reconfigure::Response& rsp) {
 
     for (dynamic_reconfigure::IntParameter& param : req.config.ints) {
@@ -496,7 +489,7 @@ class OccamConfig {
 
   void publishConfigDescription() {
     dynamic_reconfigure::ConfigDescription msg;
-    
+
     dynamic_reconfigure::Group& group = *msg.groups.emplace(msg.groups.end());
     group.name = "Default";
     group.type = "";
@@ -587,7 +580,7 @@ class OccamConfig {
 	  param.value = bool(value0);
 	}
       }
-      
+
     }
 
     descr_pub.publish(msg);
@@ -655,7 +648,7 @@ public:
   std::vector<std::shared_ptr<Publisher> > data_pubs;
   std::shared_ptr<OccamConfig> config;
   std::vector<ros::Publisher> camera_info_pubs;
-  
+
   OccamNode() :
     nh("~"),
     device(0) {
@@ -701,8 +694,6 @@ public:
     occamFree(types);
 
     config = std::make_shared<OccamConfig>(nh,cid,device);
-
-    //    publishCameraInfo(ros::Time::now());
   }
 
   virtual ~OccamNode() {
@@ -758,106 +749,6 @@ public:
     return true;
   }
 
-private:
-  void publishCameraInfo(const ros::Time& stamp) {
-
-    static unsigned header_seq = 0;
-
-    int sensor_count;
-    int sensor_width;
-    int sensor_height;
-    OCCAM_CHECK(occamGetDeviceValuei(device, OCCAM_SENSOR_COUNT, &sensor_count));
-    OCCAM_CHECK(occamGetDeviceValuei(device, OCCAM_SENSOR_WIDTH, &sensor_width));
-    OCCAM_CHECK(occamGetDeviceValuei(device, OCCAM_SENSOR_HEIGHT, &sensor_height));
-
-    while (camera_info_pubs.size()<sensor_count) {
-      std::stringstream sout;
-      sout<<"camera_info"<<camera_info_pubs.size();
-      ROS_INFO("advertising %s",sout.str().c_str());
-      camera_info_pubs.push_back(nh.advertise<sensor_msgs::CameraInfo>(sout.str(), 1, true));
-    }
-
-    int binning_mode = OCCAM_BINNING_DISABLED;
-    occamGetDeviceValuei(device, OCCAM_BINNING_MODE, &binning_mode);
-    
-    for (int j=0;j<sensor_count;++j) {
-      double D[5], K[9], R[9], T[3];
-
-      OCCAM_CHECK(occamGetDeviceValuerv
-		  (device, OccamParam(OCCAM_SENSOR_DISTORTION_COEFS0+j), D, 5));
-      OCCAM_CHECK(occamGetDeviceValuerv
-		  (device, OccamParam(OCCAM_SENSOR_INTRINSICS0+j), K, 9));
-      OCCAM_CHECK(occamGetDeviceValuerv
-		  (device, OccamParam(OCCAM_SENSOR_ROTATION0+j), R, 9));
-      OCCAM_CHECK(occamGetDeviceValuerv
-		  (device, OccamParam(OCCAM_SENSOR_TRANSLATION0+j), T, 3));
-
-      sensor_msgs::CameraInfo ci;
-
-      ci.header.seq = header_seq++;
-      ci.header.stamp = stamp;
-      ci.header.frame_id = "occam";
-      
-      ci.width = sensor_width;
-      ci.height = sensor_height;
-      
-      ci.distortion_model = "plumb_bob";
-      ci.D.assign(D,D+5);
-
-      ci.K[0] = K[0];
-      ci.K[1] = K[1];
-      ci.K[2] = K[2];
-      ci.K[3] = K[3];
-      ci.K[4] = K[4];
-      ci.K[5] = K[5];
-      ci.K[6] = K[6];
-      ci.K[7] = K[7];
-      ci.K[8] = K[8];
-
-      ci.R[0] = 1;
-      ci.R[1] = 0;
-      ci.R[2] = 0;
-      ci.R[3] = 0;
-      ci.R[4] = 1;
-      ci.R[5] = 0;
-      ci.R[6] = 0;
-      ci.R[7] = 0;
-      ci.R[8] = 1;
-
-      ci.P[0] = R[0];
-      ci.P[1] = R[1];
-      ci.P[2] = R[2];
-      ci.P[3] = T[0];
-      ci.P[4] = R[3];
-      ci.P[5] = R[4];
-      ci.P[6] = R[5];
-      ci.P[7] = T[1];
-      ci.P[8] = R[6];
-      ci.P[9] = R[7];
-      ci.P[10] = R[8];
-      ci.P[11] = T[2];
-
-      if (binning_mode == OCCAM_BINNING_2x2) {
-	ci.binning_x = 2;
-	ci.binning_y = 2;
-      } else if (binning_mode == OCCAM_BINNING_4x4) {
-	ci.binning_x = 4;
-	ci.binning_y = 4;
-      } else {
-	ci.binning_x = 1;
-	ci.binning_y = 1;
-      }
-
-      ci.roi.x_offset = 0;
-      ci.roi.y_offset = 0;
-      ci.roi.height = 0;
-      ci.roi.width = 0;
-      ci.roi.do_rectify = false;
-      
-      camera_info_pubs[j].publish(ci);
-    }
-
-  }
 };
 
 int main(int argc, char **argv) {
