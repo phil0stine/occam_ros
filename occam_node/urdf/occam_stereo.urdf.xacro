@@ -22,51 +22,51 @@
     <origin xyz="-0.00014444 0.00189197 0.04503535" rpy="0.0009243901160186191 -0.003950468839017018 -0.000436939008523767" />
   </joint>
 
-  <joint name="occam_occam1_joint" type="fixed">
-    <parent link="occam"/>
-    <child link="occam1"/>
-    <origin xyz="0.04457166 0.00365759 0.0145467" rpy="-0.014134330570652666 1.2610350948288869 -0.018163670234918716" />
-  </joint>
-
   <joint name="occam_occam2_joint" type="fixed">
     <parent link="occam"/>
     <child link="occam2"/>
-    <origin xyz="0.02087899 0.00561553 -0.03064019" rpy="-0.014134330570652666 1.2610350948288869 -0.018163670234918716" />
-  </joint>
-
-  <joint name="occam_occam3_joint" type="fixed">
-    <parent link="occam"/>
-    <child link="occam3"/>
-    <origin xyz="-0.01810728 0.00221789 -0.0320499" rpy="3.1353729429166743 -0.6263287585583016 -3.1342145524065526" />
+    <origin xyz="0.04457166 0.00365759 0.0145467" rpy="-0.014134330570652666 1.2610350948288869 -0.018163670234918716" />
   </joint>
 
   <joint name="occam_occam4_joint" type="fixed">
     <parent link="occam"/>
     <child link="occam4"/>
-    <origin xyz="-0.04765344 0.00368533 0.01351506" rpy="-0.0029377021487651546 -1.2582576872617013 0.009985222874155745" />
-  </joint>
-
-  <joint name="occam_occam5_joint" type="fixed">
-    <parent link="occam"/>
-    <child link="occam5"/>
-    <origin xyz="0.00014597 0.13126272 0.04344179" rpy="-0.0016569427801871163 -0.0021317146926745994 -0.004237665342639083" />
+    <origin xyz="0.02087899 0.00561553 -0.03064019" rpy="3.137126856077615 0.6329943194817241 3.127251006727539" />
   </joint>
 
   <joint name="occam_occam6_joint" type="fixed">
     <parent link="occam"/>
     <child link="occam6"/>
-    <origin xyz="0.0437822 0.13347492 0.01386086" rpy="-0.036375063815756864 1.250533940325731 -0.030520420934943716" />
-  </joint>
-
-  <joint name="occam_occam7_joint" type="fixed">
-    <parent link="occam"/>
-    <child link="occam7"/>
-    <origin xyz="0.02107877 0.13433178 -0.03161036" rpy="3.1257696013700196 0.6320747237754554 3.1042862488394047" />
+    <origin xyz="-0.01810728 0.00221789 -0.0320499" rpy="3.1353729429166743 -0.6263287585583016 -3.1342145524065526" />
   </joint>
 
   <joint name="occam_occam8_joint" type="fixed">
     <parent link="occam"/>
     <child link="occam8"/>
+    <origin xyz="-0.04765344 0.00368533 0.01351506" rpy="-0.0029377021487651546 -1.2582576872617013 0.009985222874155745" />
+  </joint>
+
+  <joint name="occam_occam1_joint" type="fixed">
+    <parent link="occam"/>
+    <child link="occam1"/>
+    <origin xyz="0.00014597 0.13126272 0.04344179" rpy="-0.0016569427801871163 -0.0021317146926745994 -0.004237665342639083" />
+  </joint>
+
+  <joint name="occam_occam3_joint" type="fixed">
+    <parent link="occam"/>
+    <child link="occam3"/>
+    <origin xyz="0.0437822 0.13347492 0.01386086" rpy="-0.036375063815756864 1.250533940325731 -0.030520420934943716" />
+  </joint>
+
+  <joint name="occam_occam5_joint" type="fixed">
+    <parent link="occam"/>
+    <child link="occam5"/>
+    <origin xyz="0.02107877 0.13433178 -0.03161036" rpy="3.1257696013700196 0.6320747237754554 3.1042862488394047" />
+  </joint>
+
+  <joint name="occam_occam7_joint" type="fixed">
+    <parent link="occam"/>
+    <child link="occam7"/>
     <origin xyz="-0.01818409 0.13131647 -0.03284005" rpy="3.134028489697657 -0.6242597199799927 -3.1284517642168317" />
   </joint>
 

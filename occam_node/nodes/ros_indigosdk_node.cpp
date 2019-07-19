@@ -118,9 +118,11 @@ class ImagePublisher : public Publisher {
   OccamDevice* device;
   bool is_color;
   bool relative_stamp;
+  bool is_rect;
   std::atomic<int> subscribers;
   unsigned seq;
   int sid;
+  std::map<int, int> camera_info_sid_map;
 public:
   std::array<double, 5> D;
   std::array<double, 9> K;
@@ -134,21 +136,36 @@ public:
       is_color(_is_color),
       seq(0),
       sid(-1),
+      is_rect(false),
       nh("~") {
 
     std::string req_name = dataNameString(req);
     std::string rect_name = "/image_rect";
-    std::size_t image_in_pub = req_name.find(rect_name);
+    std::string camera_name = "camera";
+    std::size_t rect_in_pub = req_name.find(rect_name);
+    std::size_t camera_in_pub = req_name.find(camera_name);
     relative_stamp = nh.param("relative_stamp", relative_stamp, false);
     ROS_INFO("advertising %s",req_name.c_str());
     pub = it.advertise(req_name, 1);
-    if (image_in_pub != std::string::npos) {
-      std::cout<<req_name.substr(image_in_pub-2, 1)<<std::endl;
-      sid = std::stoi(req_name.substr(image_in_pub-1, 1));
+    if (camera_in_pub != std::string::npos) {
+      sid = std::stoi(req_name.substr(camera_in_pub+camera_name.size(), 1));
+    }
+
+    if (rect_in_pub != std::string::npos) {
+      is_rect = true;
       std::stringstream sout;
-      sout<<req_name.substr(0, image_in_pub)<<"/camera_info";
-      std::cout<<"sout.str"<<sout.str()<<std::endl;
+      sout<<req_name.substr(0, rect_in_pub)<<"/camera_info";
       info_pub = nh.advertise<sensor_msgs::CameraInfo>(sout.str(), 1, true);
+      camera_info_sid_map[0] = 0;
+      camera_info_sid_map[1] = 5;
+      camera_info_sid_map[2] = 1;
+      camera_info_sid_map[3] = 6;
+      camera_info_sid_map[4] = 2;
+      camera_info_sid_map[5] = 7;
+      camera_info_sid_map[6] = 3;
+      camera_info_sid_map[7] = 8;
+      camera_info_sid_map[8] = 4;
+      camera_info_sid_map[9] = 9;
     }
     K[0] = 0.0;
     device = dev;
@@ -197,24 +214,6 @@ public:
     ci.R[6] = 0;
     ci.R[7] = 0;
     ci.R[8] = 1;
-
-    // SDK does not provide this information, so for now, have to assume it's K*[R|t]
-    // cv::Mat k_mat(3, 3, CV_64F, K);
-    // cv::Mat r_mat(3, 3, CV_64F, R);
-    // cv::Mat rt_mat(3, 4, CV_64F);
-    // cv::Mat r_block(rt_mat(cv::Rect(0,0,3,3)));
-    // r_mat.copyTo(r_block);
-    // cv::Mat p_mat = k_mat * rt_mat;
-    // p_mat.at<double>(0,3) = 0.001 * T[0];
-    // p_mat.at<double>(1,3) = 0.001 * T[1];
-    // p_mat.at<double>(2,3) = 0.001 * T[2];
-    // for (int i=0; i < 12; ++i) {
-    //   ci.P[i] = p_mat.data[i];
-    // }
-    // std::cout<<"K"<<k_mat<<std::endl;
-    // std::cout<<"R"<<r_mat<<std::endl;
-    // std::cout<<"T"<<T[0]<<" "<<T[1]<<" "<<T<<std::endl;
-    // std::cout<<"P"<<p_mat<<std::endl;
 
     ci.P[0] = K[0];
     ci.P[1] = K[1];
@@ -280,12 +279,12 @@ public:
     else stamp = ros::Time::now();
 
     // Rect images are transposed for stereo proc. Undo transpose for msg
-    int msg_width = sid < 0 ? img0->width : img0->height;
-    int msg_height = sid < 0 ? img0->height : img0->width;;
+    int msg_width = is_rect ? img0->height : img0->width;
+    int msg_height = is_rect ? img0->width : img0->height;
 
     sensor_msgs::Image img1;
     img1.header.seq = seq++;
-    img1.header.frame_id = "occam";
+    img1.header.frame_id = sid >= 0 ? "occam"+std::to_string(sid) : "occam";
     img1.header.stamp = stamp;
     img1.encoding = image_encoding;
     img1.height = msg_height;
@@ -297,7 +296,7 @@ public:
     int src_step = img0->step[0];
     uint8_t* dstp = &img1.data[0];
     int dst_step = img1.step;
-    if (sid >= 0) {
+    if (is_rect) {
       for (int i=0; i<img0->width; ++i) {
         srcp=img0->data[0]+i*bpp;
         for (int j=0; j<img0->height; ++j) {
@@ -315,7 +314,7 @@ public:
 
     pub.publish(img1);
 
-    if (sid >= 0) {
+    if (is_rect) {
       sensor_msgs::CameraInfo info1 = getInfoMsg(img1);
       info_pub.publish(info1);
     }
@@ -328,13 +327,20 @@ class PointCloudPublisher : public Publisher {
   ros::Publisher pub;
   bool relative_stamp;
   unsigned seq;
+  int sid;
 public:
   PointCloudPublisher(OccamDataName _req, ros::NodeHandle nh)
     : Publisher(_req),
       req(_req),
+      sid(-1),
       seq(0) {
 
     std::string req_name = dataNameString(req);
+    std::string camera_name = "camera";
+    std::size_t camera_in_pub = req_name.find(camera_name);
+    if (camera_in_pub != std::string::npos) {
+      sid = std::stoi(req_name.substr(camera_in_pub+camera_name.size(), 1));
+    }
     ROS_INFO("advertising %s",req_name.c_str());
     pub = nh.advertise<sensor_msgs::PointCloud2>(nh.resolveName(req_name), 1);
     relative_stamp = nh.param("relative_stamp", relative_stamp, false);
@@ -357,7 +363,7 @@ public:
 
     sensor_msgs::PointCloud2 pc2;
     pc2.header.seq = seq++;
-    pc2.header.frame_id = "occam";
+    pc2.header.frame_id = sid >= 0 ? "occam"+std::to_string(sid) : "occam";
     pc2.header.stamp = stamp;
 
     pc2.height = 1;

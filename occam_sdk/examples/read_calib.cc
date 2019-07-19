@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <stdio.h>
 #include <stdlib.h>
+#include <map>
 
 static void reportError(int error_code) {
   std::cerr<<"Occam API Error: "<<error_code<<std::endl;
@@ -102,7 +103,19 @@ int main(int argc, const char** argv) {
 	 (device, OccamParam(OCCAM_SENSOR_TRANSLATION0+j), T, 3)) != OCCAM_API_SUCCESS)
       reportError(r);
 
-    std::cout<<"sensor "<<j<<":"<<std::endl;
+    std::map<int, int> camera_info_sid_map;
+    camera_info_sid_map[0] = 0;
+    camera_info_sid_map[1] = 2;
+    camera_info_sid_map[2] = 4;
+    camera_info_sid_map[3] = 6;
+    camera_info_sid_map[4] = 8;
+    camera_info_sid_map[5] = 1;
+    camera_info_sid_map[6] = 3;
+    camera_info_sid_map[7] = 5;
+    camera_info_sid_map[8] = 7;
+    camera_info_sid_map[9] = 9;
+    std::cout<<"Sensor index "<<camera_info_sid_map[j]<<":"<<std::endl;
+    std::cout<<"Calib index "<<j<<":"<<std::endl;
     std::cout<<"  width = "<<sensor_width<<std::endl;
     std::cout<<"  height = "<<sensor_height<<std::endl;
     std::cout<<"  D = "<<matstr(1,5,D)<<std::endl;
